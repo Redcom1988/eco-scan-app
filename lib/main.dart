@@ -59,10 +59,23 @@ class MyHomePage extends StatelessWidget {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
+            icon: Icon(Icons.newspaper),
+            label: 'News',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.airplane_ticket),
+            label: 'Vouchers',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Profile',
           ),
         ],
+        type: BottomNavigationBarType.fixed,
+        elevation: 8, // Default elevation for the bar
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).colorScheme.primary,
       ),
       body: Center(
         child: Column(
