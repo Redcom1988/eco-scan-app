@@ -53,7 +53,10 @@ class MyHomePage extends StatelessWidget {
 
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
-        items: const [
+        onTap: (index) {
+          // Handle navigation based on index
+        },
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
@@ -81,7 +84,6 @@ class MyHomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Change 'child' to 'children'
             Padding(
               padding: EdgeInsets.all(8),
               child: BigCard(pair: pair), // Padding should wrap a single child
