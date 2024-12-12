@@ -9,35 +9,40 @@ class HomeScreen extends StatelessWidget {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(8),
-            child: BigCard(pair: pair),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  appState.getNext();
-                  print('Button Pressed');
-                },
-                child: Text('Next'),
-              ),
-              SizedBox(width: 10), // Add some spacing between buttons
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.toggleFavourite();
-                },
-                icon: Icon(Icons.favorite),
-                label: Text('Favourite'),
-              ),
-            ],
-          ),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('PLACEHOLDER'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: BigCard(pair: pair),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    appState.getNext();
+                    print('Button Pressed');
+                  },
+                  child: Text('Next'),
+                ),
+                SizedBox(width: 10), // Add some spacing between buttons
+                ElevatedButton.icon(
+                  onPressed: () {
+                    appState.toggleFavourite();
+                  },
+                  icon: Icon(Icons.favorite),
+                  label: Text('Favourite'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
