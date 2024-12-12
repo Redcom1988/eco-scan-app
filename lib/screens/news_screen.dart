@@ -81,66 +81,123 @@ class NewsCard extends StatelessWidget {
 }
 
 class NewsScreen extends StatelessWidget {
-  final List<Map<String, String>> newsItems = [
-    {
-      'title': 'Environmental Update 2024',
-      'description':
-          'Latest developments in environmental conservation and sustainable practices.',
-      'imageUrl': 'https://placeholder.com/environmental1.jpg',
+  final List<Map<String, String>> newsList = List.generate(
+    6,
+    (index) => {
+      "title": "Kerajinan Bunga Unik dari tutup botol..",
+      "description":
+          "Banyak yang masih bingung mengenai cara mudah pengelolaan sampah, padahal di masa yang serba digital..",
+      "views": "11.210 view",
+      "imageUrl":
+          "https://via.placeholder.com/80", // Gunakan URL gambar placeholder
     },
-    {
-      'title': 'New Recycling Initiative',
-      'description':
-          'Community recycling program launches with innovative sorting technology.',
-      'imageUrl': 'https://placeholder.com/recycling1.jpg',
-    },
-    // Add more news items as needed
-  ];
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ecoscan'),
+        title: const Text(
+          'Ecoscan',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                filled: true,
-                fillColor: Colors.grey[100],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ListView.builder(
+          itemCount: newsList.length,
+          itemBuilder: (context, index) {
+            final news = newsList[index];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16.0),
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8.0),
+                border: Border.all(color: Colors.grey[300]!),
               ),
-              onChanged: (value) {
-                // Add your search logic here
-                print('Search query: $value');
-              },
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: newsItems.length,
-              itemBuilder: (context, index) {
-                final news = newsItems[index];
-                return NewsCard(
-                  title: news['title']!,
-                  description: news['description']!,
-                  imageUrl: news['imageUrl']!,
-                  onTap: () {
-                    // Handle news item tap
-                    print('Tapped on news: ${news['title']}');
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+              child: Row(
+                children: [
+                  // Gambar Berita
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      news["imageUrl"]!,
+                      height: 80,
+                      width: 80,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 12.0),
+                  // Deskripsi Berita
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          news["title"]!,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16.0,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(height: 4.0),
+                        Text(
+                          news["description"]!,
+                          style: const TextStyle(
+                            fontSize: 14.0,
+                            color: Colors.black54,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 8.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              news["views"]!,
+                              style: const TextStyle(
+                                fontSize: 12.0,
+                                color: Colors.black45,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    print("Liked!");
+                                  },
+                                  icon: const Icon(
+                                    Icons.favorite_border,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    print("Read more clicked");
+                                  },
+                                  child: const Text(
+                                    "Baca selengkapnya",
+                                    style: TextStyle(color: Colors.green),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
