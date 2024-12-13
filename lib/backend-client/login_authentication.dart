@@ -8,7 +8,7 @@ Future<bool> loginUser(String email, String password) async {
   var digest = sha256.convert(bytes);
 
   final response = await http.post(
-    Uri.parse('http://localhost/login'),
+    Uri.parse('http://localhost:3000/login'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
