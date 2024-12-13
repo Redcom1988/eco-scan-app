@@ -5,6 +5,7 @@ import 'screens/home_screen.dart';
 import 'screens/news_screen.dart';
 import 'screens/voucher_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/qrscanner_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -35,6 +36,7 @@ class MyHomePage extends StatelessWidget {
     NewsScreen(),
     VouchersScreen(),
     ProfileScreen(),
+    QRScannerScreen(),
   ];
 
   @override
@@ -56,6 +58,10 @@ class MyHomePage extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.newspaper),
             label: 'News',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code_scanner),
+            label: 'Scan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.airplane_ticket),
