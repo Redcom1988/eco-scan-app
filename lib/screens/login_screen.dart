@@ -1,6 +1,6 @@
 import 'package:ecoscan/backend-client/login_authentication.dart';
 import 'package:flutter/material.dart';
-import 'package:ecoscan/screens/homepage_screen.dart'; // Import the correct home page screen
+import 'package:ecoscan/screens/homepage_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -15,18 +15,16 @@ class LoginScreenState extends State<LoginScreen> {
   void _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Call loginUser and navigate to the home screen if successful
       final success = await loginUser(_email, _password);
+      if (!mounted) return; // Ensure the widget is still mounted
       if (success) {
-        if (!mounted) return; // Check if the widget is still mounted
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  HomePageScreen()), // Correct reference to HomePageScreen
+            builder: (context) => HomePageScreen(),
+          ),
         );
       } else {
-        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Invalid email or password'),
