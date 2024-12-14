@@ -187,16 +187,16 @@ class RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 16.0),
                         child: Text(
                           'Register',
                           style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
