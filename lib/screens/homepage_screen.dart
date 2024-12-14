@@ -6,19 +6,16 @@ import './news_screen.dart';
 import './voucher_screen.dart';
 import './profile_screen.dart';
 import './qrscanner_screen.dart';
-import '../models/user.dart';
 
 class HomePageScreen extends StatelessWidget {
-  final User user;
-
-  HomePageScreen({required this.user});
+  HomePageScreen();
 
   List<Widget> _screens(BuildContext context) => [
         HomeScreen(),
         NewsScreen(),
         QRScannerScreen(),
         VouchersScreen(),
-        ProfileScreen(user: user),
+        ProfileScreen(),
       ];
 
   @override

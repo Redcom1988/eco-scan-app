@@ -1,12 +1,45 @@
+import 'package:ecoscan/backend-client/remove_local_user.dart';
+import 'package:ecoscan/screens/qr_code_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'login_screen.dart';
 import '../models/user.dart';
+import 'package:ecoscan/backend-client/get_local_user.dart';
 
-class ProfileScreen extends StatelessWidget {
-  final User user; // Add user parameter
+class ProfileScreen extends StatefulWidget {
+  // Add user parameter
+  const ProfileScreen({Key? key}) : super(key: key);
 
-  // Require user data in constructor
-  ProfileScreen({required this.user});
+  @override
+  ProfileScreenState createState() => ProfileScreenState();
+}
+
+class ProfileScreenState extends State<ProfileScreen> {
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+    // if (user == null) {
+    //   Navigator.pushAndRemoveUntil(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => LoginScreen()),
+    //     (route) => false,
+    //   );
+    // }
+  }
+
+  Future<void> _loadUser() async {
+    try {
+      final localUser = await getLocalUser();
+      setState(() {
+        user = localUser;
+      });
+    } catch (e) {
+      print('Error loading user: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +70,9 @@ class ProfileScreen extends StatelessWidget {
                         radius: 50,
                         backgroundColor: Colors.grey.shade200,
                         child: Text(
-                          user.fullName.isNotEmpty
-                              ? user.fullName[0].toUpperCase()
-                              : '?',
+                          user?.fullName.isNotEmpty == true
+                              ? user?.fullName[0].toUpperCase() ?? ''
+                              : '',
                           style: TextStyle(
                             fontSize: 32,
                             color: Colors.green.shade900,
@@ -57,14 +90,14 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    user.fullName, // Display user's full name
+                    user?.fullName ?? '', // Display user's full name
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    user.email, // Display user's email
+                    user?.email ?? '', // Display user's email
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
@@ -77,8 +110,9 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  _buildUserInfoItem(Icons.person, 'Username', user.username),
-                  _buildUserInfoItem(Icons.email, 'Email', user.email),
+                  _buildUserInfoItem(
+                      Icons.person, 'Username', user?.username ?? ''),
+                  _buildUserInfoItem(Icons.email, 'Email', user?.email ?? ''),
                   _buildMenuItem(Icons.favorite, 'Edukasi yang disukai'),
                   _buildMenuItem(Icons.bookmark, 'Edukasi yang disimpan'),
                   _buildMenuItem(
@@ -87,6 +121,7 @@ class ProfileScreen extends StatelessWidget {
                   _buildMenuItem(Icons.help, 'Pusat Bantuan'),
                   _buildMenuItem(Icons.settings, 'Pengaturan Lainnya'),
                   _buildLogoutButton(context), // Add logout button
+                  _buildQRCodeButton(context),
                 ],
               ),
             ),
@@ -153,6 +188,7 @@ class ProfileScreen extends StatelessWidget {
                     TextButton(
                       onPressed: () {
                         // Clear user session here
+                        removeLocalUser();
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
@@ -173,4 +209,20 @@ class ProfileScreen extends StatelessWidget {
       ],
     );
   }
+}
+
+Widget _buildQRCodeButton(BuildContext context) {
+  return Column(
+    children: [
+      ListTile(
+        leading: Icon(Icons.logout, color: Colors.red),
+        title: Text('QRCode', style: TextStyle(color: Colors.red)),
+        onTap: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => QRCodeScreen()));
+        },
+      ),
+      Divider(),
+    ],
+  );
 }
