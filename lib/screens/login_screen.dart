@@ -27,23 +27,27 @@ class LoginScreenState extends State<LoginScreen> {
       );
 
       try {
-        final success = await loginUser(_email, _password);
+        final loginResponse = await loginUser(_email, _password);
 
         // Hide loading indicator
         Navigator.of(context).pop();
 
         if (!mounted) return;
 
-        if (success) {
+        if (loginResponse.success && loginResponse.user != null) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomePageScreen(),
+              builder: (context) => HomePageScreen(
+                user: loginResponse.user!,
+              ),
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login failed. Please try again.')),
+            SnackBar(
+                content: Text(
+                    loginResponse.error ?? 'Login failed. Please try again.')),
           );
         }
       } catch (e) {
@@ -54,7 +58,8 @@ class LoginScreenState extends State<LoginScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text('Network error. Please check your connection.')),
+            content: Text('Network error. Please check your connection.'),
+          ),
         );
       }
     }
