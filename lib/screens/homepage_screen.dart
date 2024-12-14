@@ -6,22 +6,27 @@ import './news_screen.dart';
 import './voucher_screen.dart';
 import './profile_screen.dart';
 import './qrscanner_screen.dart';
+import '../models/user.dart';
 
 class HomePageScreen extends StatelessWidget {
-  final List<Widget> _screens = [
-    HomeScreen(),
-    NewsScreen(),
-    QRScannerScreen(),
-    VouchersScreen(),
-    ProfileScreen(),
-  ];
+  final User user;
+
+  HomePageScreen({required this.user});
+
+  List<Widget> _screens(BuildContext context) => [
+        HomeScreen(),
+        NewsScreen(),
+        QRScannerScreen(),
+        VouchersScreen(),
+        ProfileScreen(user: user),
+      ];
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
 
     return Scaffold(
-      body: _screens[appState.selectedIndex],
+      body: _screens(context)[appState.selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: appState.selectedIndex,
         onTap: (index) {
