@@ -10,10 +10,10 @@ import './qrscanner_screen.dart';
 class HomePageScreen extends StatelessWidget {
   final List<Widget> _screens = [
     HomeScreen(),
-    NewsScreen(),
+    NewsScreen(),\
+    QRScannerScreen(),
     VouchersScreen(),
     ProfileScreen(),
-    QRScannerScreen(),
   ];
 
   @override
