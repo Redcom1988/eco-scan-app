@@ -173,4 +173,28 @@ class ProfileScreen extends StatelessWidget {
       ],
     );
   }
+
+  // Widget untuk membuat item menu
+  Widget _buildMenuItem(IconData icon, String title) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: Colors.green.shade900),
+          title: Text(title),
+          trailing: Icon(Icons.chevron_right),
+          onTap: () {
+            // Tambahkan fungsi navigasi di sini
+          },
+        ),
+        Divider(),
+      ],
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: ProfileScreen(),
+    debugShowCheckedModeBanner: false,
+  ));
 }
