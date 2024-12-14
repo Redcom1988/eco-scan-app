@@ -4,8 +4,8 @@ import 'package:crypto/crypto.dart';
 
 Future<bool> loginUser(String email, String password) async {
   // Hash the password using SHA-256
-  // var bytes = utf8.encode(password);
-  // var digest = sha256.convert(bytes);
+  var bytes = utf8.encode(password);
+  var digest = sha256.convert(bytes);
 
   try {
     final response = await http
@@ -16,7 +16,7 @@ Future<bool> loginUser(String email, String password) async {
           },
           body: jsonEncode(<String, String>{
             'email': email,
-            'passwordHash': password.toString(),
+            'passwordHash': digest.toString(),
           }),
         )
         .timeout(Duration(seconds: 10)); // Add timeout
