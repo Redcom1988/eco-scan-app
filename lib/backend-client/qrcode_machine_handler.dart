@@ -1,4 +1,3 @@
-// lib/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/withdrawal_response.dart';
@@ -18,8 +17,12 @@ Future<WithdrawalResponse> postWithdrawal(
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       print("Withdrawal Success");
+      final Map<String, dynamic> data = json.decode(response.body);
+      final withdrawalId = data['withdrawalId'];
+
       return WithdrawalResponse(
         success: true,
+        withdrawalId: withdrawalId,
       );
     } else {
       print("Withdrawal Failed");
