@@ -46,3 +46,4 @@ app.*.map.json
 .vscode/launch.json
 .vscode/settings.json
 macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Flutter/GeneratedPluginRegistrant.swift
