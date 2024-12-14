@@ -1,6 +1,6 @@
 import 'package:ecoscan/backend-client/qrcode_machine_handler.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class WithdrawalForm extends StatefulWidget {
   @override
@@ -9,11 +9,11 @@ class WithdrawalForm extends StatefulWidget {
 
 class WithdrawalFormState extends State<WithdrawalForm> {
   List<ItemRow> items = [];
+  int? withdrawalId; // Add this to store the withdrawal ID
 
   @override
   void initState() {
     super.initState();
-    // Start with one empty row
     addNewItem();
   }
 
@@ -29,8 +29,38 @@ class WithdrawalFormState extends State<WithdrawalForm> {
     });
   }
 
+  void _showQRDialog(int withdrawalId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Withdrawal QR Code'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              QrImageView(
+                data: withdrawalId.toString(), // Convert ID to string
+                version: QrVersions.auto,
+                size: 200.0,
+              ),
+              SizedBox(height: 16),
+              Text('Withdrawal ID: $withdrawalId'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> submitForm() async {
-    // Create the data structure
     final withdrawalData = {
       'contents': {
         'items': items
@@ -42,8 +72,6 @@ class WithdrawalFormState extends State<WithdrawalForm> {
       }
     };
 
-    print('Sending data: ${jsonEncode(withdrawalData)}'); // Debug print
-
     try {
       final response = await postWithdrawal(withdrawalData);
 
@@ -51,6 +79,12 @@ class WithdrawalFormState extends State<WithdrawalForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Withdrawal submitted successfully')),
         );
+
+        // Show QR code dialog if we have a withdrawal ID
+        if (response.withdrawalId != null) {
+          _showQRDialog(response.withdrawalId!);
+        }
+
         // Clear the form
         setState(() {
           items.clear();
