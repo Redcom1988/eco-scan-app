@@ -15,20 +15,45 @@ class LoginScreenState extends State<LoginScreen> {
   void _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final success = await loginUser(_email, _password);
-      if (!mounted) return; // Ensure the widget is still mounted
-      if (success) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePageScreen(),
-          ),
-        );
-      } else {
+
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(child: CircularProgressIndicator());
+        },
+      );
+
+      try {
+        final success = await loginUser(_email, _password);
+
+        // Hide loading indicator
+        Navigator.of(context).pop();
+
+        if (!mounted) return;
+
+        if (success) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePageScreen(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Login failed. Please try again.')),
+          );
+        }
+      } catch (e) {
+        // Hide loading indicator
+        Navigator.of(context).pop();
+
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Invalid email or password'),
-          ),
+              content: Text('Network error. Please check your connection.')),
         );
       }
     }
