@@ -7,20 +7,23 @@ Future<bool> loginUser(String email, String password) async {
   // var bytes = utf8.encode(password);
   // var digest = sha256.convert(bytes);
 
-  final response = await http.post(
-    Uri.parse('http://localhost:3000/users/login'),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, String>{
-      'email': email,
-      'passwordHash': password.toString(),
-    }),
-  );
+  try {
+    final response = await http
+        .post(
+          Uri.parse('http://localhost:3000/users/login'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(<String, String>{
+            'email': email,
+            'passwordHash': password.toString(),
+          }),
+        )
+        .timeout(Duration(seconds: 10)); // Add timeout
 
-  if (response.statusCode == 200) {
-    return true;
-  } else {
+    return response.statusCode == 200;
+  } catch (e) {
+    print('Login error: $e'); // Log the error
     return false;
   }
 }
