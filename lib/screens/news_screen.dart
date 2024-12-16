@@ -155,9 +155,11 @@ class NewsScreenState extends State<NewsScreen> {
 
   // Load content from backend
   Future<void> loadContent() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final content = await fetchEducationContent();
+      if (!mounted) return;
       setState(() {
         if (content != null) {
           _content = content;
@@ -168,12 +170,15 @@ class NewsScreenState extends State<NewsScreen> {
         }
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = 'Error: ${e.toString()}';
       });
       print('Error loading content: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
