@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 
-class VouchersScreen extends StatelessWidget {
+class VouchersScreen extends StatefulWidget {
+  @override
+  _VouchersScreenState createState() => _VouchersScreenState();
+}
+
+class _VouchersScreenState extends State<VouchersScreen> {
+  String selectedActiveMonth = "Januari 2024";
+  String selectedHistoryMonth = "Oktober 2023";
+
+  final List<String> months = [
+    "Januari 2024",
+    "Oktober 2023",
+  ];
+
   final List<Map<String, dynamic>> activeVouchers = [
     {
       "amount": "Rp 40.000,00",
@@ -25,186 +38,224 @@ class VouchersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Ecoscan',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Bagian Voucher Aktif
-              const Text(
-                "Voucher aktif saya",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildVoucherDropdown(context, "Januari 2024"),
-              const SizedBox(height: 12),
-              ...activeVouchers.map((voucher) => _buildVoucherCard(
-                    voucher["amount"],
-                    voucher["expiryDate"],
-                    isHistory: false,
-                  )),
-              const SizedBox(height: 24),
-
-              // Bagian Riwayat Voucher
-              const Text(
-                "Riwayat voucher saya",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildVoucherDropdown(context, "Oktober 2023"),
-              const SizedBox(height: 12),
-              ...voucherHistory.map((voucher) => _buildVoucherCard(
-                    voucher["amount"],
-                    voucher["expiryDate"],
-                    status: voucher["status"],
-                  )),
-            ],
+          style: TextStyle(
+            color: Color(0xFF1B5E20),
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: false,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Color(0xFF1B5E20)),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSection(
+              title: "Voucher aktif saya",
+              dropdownValue: selectedActiveMonth,
+              onDropdownChanged: (value) {
+                setState(() {
+                  selectedActiveMonth = value!;
+                });
+              },
+              vouchers: activeVouchers,
+              isHistory: false,
+            ),
+            SizedBox(height: 24),
+            _buildSection(
+              title: "Riwayat voucher saya",
+              dropdownValue: selectedHistoryMonth,
+              onDropdownChanged: (value) {
+                setState(() {
+                  selectedHistoryMonth = value!;
+                });
+              },
+              vouchers: voucherHistory,
+              isHistory: true,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildVoucherDropdown(BuildContext context, String initialValue) {
+  Widget _buildSection({
+    required String title,
+    required String dropdownValue,
+    required ValueChanged<String?> onDropdownChanged,
+    required List<Map<String, dynamic>> vouchers,
+    bool isHistory = true,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        DropdownButton<String>(
+          value: dropdownValue,
+          isExpanded: false,
+          underline: Container(),
+          items: months.map((month) {
+            return DropdownMenuItem(
+              value: month,
+              child: Text(month),
+            );
+          }).toList(),
+          onChanged: onDropdownChanged,
+          icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+          style: TextStyle(color: Colors.black),
+        ),
+        SizedBox(height: 12),
+        ...vouchers.map((voucher) => _buildVoucherCard(
+              amount: voucher["amount"],
+              expiryDate: voucher["expiryDate"],
+              status: voucher["status"],
+              isHistory: isHistory,
+            )),
+      ],
+    );
+  }
+
+  Widget _buildVoucherCard({
+    required String amount,
+    required String expiryDate,
+    String? status,
+    bool isHistory = true,
+  }) {
     return Container(
-      width: 140,
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(initialValue),
-          const Icon(Icons.arrow_drop_down, color: Colors.grey),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildVoucherCard(String amount, String expiryDate,
-      {bool isHistory = true, String? status}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(color: Colors.grey[300]!),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Bagian kiri dengan desain bergelombang
-          Container(
-            width: 60,
-            alignment: Alignment.center,
-            child: RotatedBox(
-              quarterTurns: 3,
-              child: Text(
-                "Ecoscan\nVoucher",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Informasi utama voucher
+          _buildLeftLabel(),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   "EcoscanVoucher",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: const [
-                    Text("Berlaku di: "),
-                    Icon(Icons.store, size: 12, color: Colors.grey),
-                    Icon(Icons.local_mall, size: 12, color: Colors.grey),
-                    Icon(Icons.fastfood, size: 12, color: Colors.grey),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                SizedBox(height: 4),
                 Text(
                   "Berlaku sampai $expiryDate",
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
           ),
-
-          // Bagian kanan dengan tombol aksi
-          Column(
-            children: [
-              Text(
-                amount,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              isHistory
-                  ? Text(
-                      status ?? "",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    )
-                  : Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            print("Detail voucher");
-                          },
-                          child: const Text("Detail voucher"),
-                        ),
-                        const SizedBox(width: 4),
-                        ElevatedButton(
-                          onPressed: () {
-                            print("Gunakan voucher");
-                          },
-                          child: const Text("Gunakan voucher"),
-                        ),
-                      ],
-                    ),
-            ],
-          ),
+          _buildActionButtons(amount, isHistory, status),
         ],
       ),
     );
   }
+
+  Widget _buildLeftLabel() {
+    return Container(
+      width: 60,
+      alignment: Alignment.center,
+      child: RotatedBox(
+        quarterTurns: 3,
+        child: Text(
+          "Ecoscan\nVoucher",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 10,
+            color: Color(0xFF1B5E20),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(String amount, bool isHistory, String? status) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          amount,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: Colors.black,
+          ),
+        ),
+        SizedBox(height: 8),
+        if (isHistory)
+          Text(
+            status ?? "",
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          )
+        else
+          Column(
+            children: [
+              _buildButton("Detail voucher", onPressed: () {}),
+              SizedBox(height: 8),
+              _buildButton("Gunakan voucher", onPressed: () {}),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildButton(String text, {required VoidCallback onPressed}) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12), // Efek klik
+      child: Container(
+        width: 120,
+        padding: EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: onPressed != null ? Color(0xFF1B5E20) : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: VouchersScreen(),
+    debugShowCheckedModeBanner: false,
+  ));
 }
