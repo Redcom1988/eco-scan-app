@@ -166,9 +166,9 @@ class ProfileScreenState extends State<ProfileScreen> {
         ListTile(
           leading: Icon(Icons.logout, color: Colors.red),
           title: Text('Keluar', style: TextStyle(color: Colors.red)),
-          onTap: () {
+          onTap: () async {
             // Show confirmation dialog
-            showDialog(
+            final shouldLogout = await showDialog<bool>(
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
@@ -176,20 +176,11 @@ class ProfileScreenState extends State<ProfileScreen> {
                   content: Text('Apakah Anda yakin ingin keluar?'),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(context, false),
                       child: Text('Batal'),
                     ),
                     TextButton(
-                      onPressed: () {
-                        // Clear user session here
-                        removeLocalUser();
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LoginScreen()),
-                          (route) => false,
-                        );
-                      },
+                      onPressed: () => Navigator.pop(context, true),
                       child:
                           Text('Keluar', style: TextStyle(color: Colors.red)),
                     ),
@@ -197,6 +188,20 @@ class ProfileScreenState extends State<ProfileScreen> {
                 );
               },
             );
+
+            // If user confirmed logout
+            if (shouldLogout == true) {
+              // Clear user session here
+              await removeLocalUser();
+
+              if (!mounted) return;
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+                (route) => false,
+              );
+            }
           },
         ),
         Divider(),
