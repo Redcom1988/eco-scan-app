@@ -229,6 +229,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
         width: 120,
         padding: EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
+          // ignore: unnecessary_null_comparison
           color: onPressed != null ? Color(0xFF1B5E20) : Colors.grey[300],
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
