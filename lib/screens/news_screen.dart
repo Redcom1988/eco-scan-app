@@ -2,84 +2,31 @@ import 'package:ecoscan/backend-client/education_handler.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-// State variables at file level
-List<Map<String, dynamic>> _content = [];
-bool _isLoading = true;
-String? _error;
-DateTime lastRefresh = DateTime.now();
-
-// Load content function
-Future<void> loadContent() async {
-  _isLoading = true;
-  try {
-    final content = await fetchEducationContent();
-    if (content != null) {
-      _content = content;
-      _error = null;
-      lastRefresh = DateTime.now();
-    } else {
-      _error = 'Failed to load content';
-    }
-  } catch (e) {
-    _error = 'Error: ${e.toString()}';
-    print('Error loading content: $e');
-  } finally {
-    _isLoading = false;
-  }
-}
-
-// Handle read more action
-Future<void> handleReadMore(int contentId) async {
-  try {
-    final success = await incrementContentViews(contentId);
-    if (success) {
-      // Find and update the content locally
-      final contentIndex =
-          _content.indexWhere((item) => item['contentId'] == contentId);
-      if (contentIndex != -1) {
-        _content[contentIndex]['contentViews']++;
-      }
-    }
-  } catch (e) {
-    print('Error handling read more: $e');
-  }
-}
-
-// Handle like action
-Future<void> handleLike(int contentId) async {
-  try {
-    final success = await toggleContentLike(contentId);
-    if (success) {
-      // Refresh content to get updated likes
-      await loadContent();
-    }
-  } catch (e) {
-    print('Error handling like: $e');
-  }
-}
-
-// Format timestamp function
-String formatTimestamp(String timestamp) {
+// Format timestamp to relative time
+String formatTimestamp(String timestamp, DateTime referenceTime) {
   try {
     final date = DateTime.parse(timestamp);
-    final now = DateTime.now();
-    final difference = now.difference(date);
+    final difference = referenceTime.difference(date);
 
-    if (difference.inDays > 0) {
-      return '${difference.inDays} days ago';
+    if (difference.inDays >= 30) {
+      final months = (difference.inDays / 30).floor();
+      return '$months ${months == 1 ? 'month' : 'months'} ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} ${difference.inDays == 1 ? 'day' : 'days'} ago';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} hours ago';
+      return '${difference.inHours} ${difference.inHours == 1 ? 'hour' : 'hours'} ago';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minutes ago';
+      return '${difference.inMinutes} ${difference.inMinutes == 1 ? 'minute' : 'minutes'} ago';
     } else {
       return 'Just now';
     }
   } catch (e) {
+    print('Error formatting timestamp: $e');
     return 'Invalid date';
   }
 }
 
-// Format view count function
+// Format view count with K/M suffix
 String formatViewCount(int views) {
   if (views >= 1000000) {
     return '${(views / 1000000).toStringAsFixed(1)}M views';
@@ -90,8 +37,9 @@ String formatViewCount(int views) {
   }
 }
 
-// Build news card widget
-Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
+// Build card widget for news item
+Widget buildNewsCard(BuildContext context, Map<String, dynamic> content,
+    DateTime referenceTime, Function(int) onLike, Function(int) onReadMore) {
   return Container(
     margin: const EdgeInsets.only(bottom: 16.0),
     padding: const EdgeInsets.all(12.0),
@@ -103,7 +51,7 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Image section
+        // Image
         ClipRRect(
           borderRadius: BorderRadius.circular(8.0),
           child: Image.network(
@@ -122,8 +70,7 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
           ),
         ),
         const SizedBox(width: 12.0),
-
-        // Content section
+        // Content
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,12 +96,10 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8.0),
-
-              // Bottom row with stats and actions
+              // Stats and actions row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Stats section
                   Flexible(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -172,7 +117,8 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
                         const SizedBox(width: 8.0),
                         Flexible(
                           child: Text(
-                            formatTimestamp(content['timestamp'] ?? ''),
+                            formatTimestamp(
+                                content['timestamp'] ?? '', referenceTime),
                             style: TextStyle(
                               fontSize: 12.0,
                               color: Colors.grey[600],
@@ -183,14 +129,13 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
                       ],
                     ),
                   ),
-                  // Actions section
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        onPressed: () => handleLike(content['contentId']),
+                        onPressed: () => onLike(content['contentId']),
                         icon: Icon(
                           content['isLiked'] ?? false
                               ? Icons.favorite
@@ -203,7 +148,7 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
                       ),
                       const SizedBox(width: 4.0),
                       TextButton(
-                        onPressed: () => handleReadMore(content['contentId']),
+                        onPressed: () => onReadMore(content['contentId']),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           minimumSize: const Size(0, 0),
@@ -228,51 +173,118 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content) {
   );
 }
 
-// Build news screen widget
-Widget buildNewsScreen(BuildContext context) {
-  if (_isLoading) {
-    return Center(child: CircularProgressIndicator());
-  }
-
-  if (_error != null) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(_error!),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: loadContent,
-            child: Text('Retry'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  return RefreshIndicator(
-    onRefresh: loadContent,
-    child: ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: _content.length,
-      itemBuilder: (context, index) => buildNewsCard(context, _content[index]),
-    ),
-  );
-}
-
 // Main news screen widget
 class NewsScreen extends StatefulWidget {
+  const NewsScreen({super.key});
+
   @override
-  _NewsScreenState createState() => _NewsScreenState();
+  NewsScreenState createState() => NewsScreenState();
 }
 
-class _NewsScreenState extends State<NewsScreen> {
+// News screen state
+class NewsScreenState extends State<NewsScreen> {
+  List<Map<String, dynamic>> _content = [];
+  bool _isLoading = true;
+  String? _error;
+  DateTime lastRefresh = DateTime.now();
+
+  // Load content from backend
+  Future<void> loadContent() async {
+    setState(() => _isLoading = true);
+    try {
+      final content = await fetchEducationContent();
+      setState(() {
+        if (content != null) {
+          _content = content;
+          _error = null;
+          lastRefresh = DateTime.now();
+        } else {
+          _error = 'Failed to load content';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Error: ${e.toString()}';
+      });
+      print('Error loading content: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // Handle like action
+  Future<void> handleLike(int contentId) async {
+    try {
+      final success = await toggleContentLike(contentId);
+      if (success) {
+        await loadContent();
+      }
+    } catch (e) {
+      print('Error handling like: $e');
+    }
+  }
+
+  // Handle read more action
+  Future<void> handleReadMore(int contentId) async {
+    try {
+      final success = await incrementContentViews(contentId);
+      if (success) {
+        setState(() {
+          final contentIndex =
+              _content.indexWhere((item) => item['contentId'] == contentId);
+          if (contentIndex != -1) {
+            _content[contentIndex]['contentViews']++;
+          }
+        });
+      }
+    } catch (e) {
+      print('Error handling read more: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    loadContent().then((_) {
-      if (mounted) setState(() {});
-    });
+    loadContent();
+  }
+
+  // Build news list screen
+  Widget _buildNewsScreen() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_error!),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: loadContent,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final now = DateTime.now();
+    return RefreshIndicator(
+      onRefresh: loadContent,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: _content.length,
+        itemBuilder: (context, index) => buildNewsCard(
+          context,
+          _content[index],
+          now,
+          handleLike,
+          handleReadMore,
+        ),
+      ),
+    );
   }
 
   @override
@@ -290,7 +302,7 @@ class _NewsScreenState extends State<NewsScreen> {
         elevation: 0,
         centerTitle: false,
       ),
-      body: buildNewsScreen(context),
+      body: _buildNewsScreen(),
     );
   }
 }
