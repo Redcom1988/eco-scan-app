@@ -14,72 +14,61 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   Barcode? result;
   QRViewController? controller;
+  bool isScanning = true;
   bool isProcessing = false;
   User? currentUser;
 
   @override
   void initState() {
     super.initState();
-    _loadUser();
-  }
-
-  Future<void> _loadUser() async {
-    currentUser = await getLocalUser();
-    setState(() {});
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      controller!.pauseCamera();
-    } else if (Platform.isIOS) {
-      controller!.resumeCamera();
-    }
+    if (controller != null) return;
+    getLocalUser().then((user) {
+      if (mounted) {
+        setState(() {
+          currentUser = user;
+        });
+      }
+    });
   }
 
   void onQRScanned(String qrData) async {
-    if (isProcessing || currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(currentUser == null
-              ? 'User not logged in'
-              : 'Processing previous scan'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      isProcessing = true;
-    });
-
+    // if (isProcessing || currentUser == null) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text(currentUser == null
+    //           ? 'User not logged in'
+    //           : 'Processing previous scan'),
+    //       backgroundColor: Colors.red,
+    //     ),
+    //   );
+    //   return;
+    // }
     try {
-      // Parse the QR code data to get withdrawalId
       final withdrawalId = int.tryParse(qrData);
       if (withdrawalId == null) {
         throw FormatException('Invalid QR code format');
       }
 
-      // Use the current user's ID from SharedPreferences
-      final userId = currentUser?.userId;
-      if (userId == null) {
-        throw FormatException('Invalid user ID format');
+      final userId = await getId(currentUser!.username);
+      if (userId == -1) {
+        throw FormatException('Failed to get user ID');
       }
 
       final result = await claimWithdrawal(withdrawalId, userId);
 
+      if (!mounted) return;
+
       if (result.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('Successfully claimed: ${result.claimedAmount} points\n'
-                    'New balance: ${result.newBalance}'),
+            content: Text('Points claimed successfully'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
         );
-        Navigator.pop(context);
+        await Future.delayed(Duration(seconds: 2));
+        if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+        _resetScanner();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -87,26 +76,69 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             backgroundColor: Colors.red,
           ),
         );
+        _resetScanner();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        _resetScanner();
+      }
+    }
+  }
+
+  void _resetScanner() {
+    if (mounted) {
       setState(() {
+        result = null;
+        isScanning = true;
         isProcessing = false;
       });
-      controller?.resumeCamera();
+      Future.delayed(Duration(milliseconds: 200), () {
+        controller?.resumeCamera();
+      });
+    }
+  }
+
+  void _handleResult(Barcode scanData) {
+    if (!mounted || isProcessing || scanData.code == null) return;
+
+    setState(() {
+      result = scanData;
+      isProcessing = true;
+      isScanning = false;
+    });
+
+    controller?.pauseCamera();
+    onQRScanned(scanData.code!);
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (Platform.isAndroid) {
+      controller?.pauseCamera().then((_) {
+        controller?.resumeCamera();
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('QR Scanner')),
+      appBar: AppBar(
+        title: Text('QR Scanner'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _resetScanner,
+          ),
+        ],
+      ),
       body: Column(
         children: <Widget>[
           Expanded(
@@ -126,9 +158,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                       children: [
                         if (currentUser != null)
                           Text('Logged in as: ${currentUser!.username}'),
-                        Text(result != null
-                            ? 'Scanning: ${result!.code}'
-                            : 'Scan a withdrawal QR code'),
+                        Text('Scan a withdrawal QR code'),
                       ],
                     ),
             ),
@@ -141,16 +171,8 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        result = scanData;
-      });
-
-      // Pause camera while processing
-      controller.pauseCamera();
-
-      // Call onQRScanned with the scanned data
-      if (scanData.code != null) {
-        onQRScanned(scanData.code!);
+      if (isScanning && scanData.code != null) {
+        _handleResult(scanData);
       }
     });
   }
