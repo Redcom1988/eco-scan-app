@@ -135,7 +135,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8.0),
+        borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: Colors.grey[300]!),
         boxShadow: [
           BoxShadow(
@@ -193,6 +193,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
 
   Widget _buildActionButtons(String amount, bool isHistory, String? status) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           amount,
@@ -212,7 +213,7 @@ class _VouchersScreenState extends State<VouchersScreen> {
           Column(
             children: [
               _buildButton("Detail voucher", onPressed: () {}),
-              SizedBox(height: 4),
+              SizedBox(height: 8),
               _buildButton("Gunakan voucher", onPressed: () {}),
             ],
           ),
@@ -221,14 +222,33 @@ class _VouchersScreenState extends State<VouchersScreen> {
   }
 
   Widget _buildButton(String text, {required VoidCallback onPressed}) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF1B5E20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        minimumSize: Size(100, 36),
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12), // Efek klik
+      child: Container(
+        width: 120,
+        padding: EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: onPressed != null ? Color(0xFF1B5E20) : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      child: Text(text, style: TextStyle(fontSize: 12)),
     );
   }
 }
