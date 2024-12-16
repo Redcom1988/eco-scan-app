@@ -22,32 +22,37 @@ class HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadUserAndBalance() async {
     try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      _user = await getLocalUser();
-      print('Loaded user: ${_user?.username}'); // Debug print
-
-      if (_user?.username.isNotEmpty == true) {
-        print(
-            'Attempting to fetch balance for username: ${_user!.username}'); // Debug print
-        _balance = await fetchBalance(_user!.username);
-        print('Fetched balance: $_balance'); // Debug print
-      } else {
-        print('Username is empty or null'); // Debug print
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _error = null;
+        });
       }
 
-      setState(() {
-        _isLoading = false;
-      });
+      _user = await getLocalUser();
+      print('Loaded user: ${_user?.username}');
+
+      if (_user?.username.isNotEmpty == true) {
+        print('Attempting to fetch balance for username: ${_user!.username}');
+        _balance = await fetchBalance(_user!.username);
+        print('Fetched balance: $_balance');
+      } else {
+        print('Username is empty or null');
+      }
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = 'Failed to load user data or balance';
-        _isLoading = false;
-      });
-      print('Error in _loadUserAndBalance: $e'); // More detailed error message
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to load user data or balance';
+          _isLoading = false;
+        });
+      }
+      print('Error in _loadUserAndBalance: $e');
     }
   }
 
