@@ -239,6 +239,7 @@ class HomeScreenState extends State<HomeScreen> {
         margin: EdgeInsets.only(left: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               height: 100,
@@ -262,6 +263,20 @@ class HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      selectedItemColor: Colors.green[800],
+      unselectedItemColor: Colors.grey,
+      showSelectedLabels: true,
+      items: [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.list), label: 'History'),
+        BottomNavigationBarItem(icon: Icon(Icons.qr_code), label: 'Scan'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      ],
     );
   }
 }
