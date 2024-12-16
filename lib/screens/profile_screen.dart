@@ -1,7 +1,5 @@
 import 'package:ecoscan/backend-client/remove_local_user.dart';
-import 'package:ecoscan/screens/qr_code_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'login_screen.dart';
 import '../models/user.dart';
 import 'package:ecoscan/backend-client/get_local_user.dart';
@@ -120,8 +118,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                   _buildMenuItem(Icons.language, 'Bahasa dan Wilayah'),
                   _buildMenuItem(Icons.help, 'Pusat Bantuan'),
                   _buildMenuItem(Icons.settings, 'Pengaturan Lainnya'),
-                  _buildLogoutButton(context), // Add logout button
-                  _buildQRCodeButton(context),
+                  _buildLogoutButton(context),
                 ],
               ),
             ),
@@ -209,20 +206,4 @@ class ProfileScreenState extends State<ProfileScreen> {
       ],
     );
   }
-}
-
-Widget _buildQRCodeButton(BuildContext context) {
-  return Column(
-    children: [
-      ListTile(
-        leading: Icon(Icons.logout, color: Colors.red),
-        title: Text('QRCode', style: TextStyle(color: Colors.red)),
-        onTap: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => QRCodeScreen()));
-        },
-      ),
-      Divider(),
-    ],
-  );
 }
