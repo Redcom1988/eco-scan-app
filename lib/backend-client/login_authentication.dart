@@ -30,7 +30,7 @@ Future<LoginResponse> loginUser(String email, String password) async {
             'passwordHash': digest.toString(),
           }),
         )
-        .timeout(Duration(seconds: 10));
+        .timeout(Duration(seconds: 20));
 
     if (response.statusCode == 200) {
       print("Login Success");
