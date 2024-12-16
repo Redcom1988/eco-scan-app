@@ -34,6 +34,7 @@ class ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         user = localUser;
       });
+      print('Loaded user: ${user?.fullName}');
     } catch (e) {
       print('Error loading user: $e');
     }
@@ -152,10 +153,6 @@ class ProfileScreenState extends State<ProfileScreen> {
           leading: Icon(icon, color: Colors.green.shade900),
           title: Text(title),
           subtitle: Text(value),
-          trailing: Icon(Icons.edit),
-          onTap: () {
-            // Edit profile function here
-          },
         ),
         Divider(),
       ],
