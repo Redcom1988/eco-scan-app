@@ -124,3 +124,38 @@ Future<Map<String, dynamic>?> fetchSingleContent(int contentId) async {
     return null;
   }
 }
+
+// Format timestamp to relative time
+String formatTimestamp(String timestamp, DateTime referenceTime) {
+  try {
+    final date = DateTime.parse(timestamp);
+    final difference = referenceTime.difference(date);
+
+    if (difference.inDays >= 30) {
+      final months = (difference.inDays / 30).floor();
+      return '$months ${months == 1 ? 'month' : 'months'} ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} ${difference.inDays == 1 ? 'day' : 'days'} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} ${difference.inHours == 1 ? 'hour' : 'hours'} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} ${difference.inMinutes == 1 ? 'minute' : 'minutes'} ago';
+    } else {
+      return 'Just now';
+    }
+  } catch (e) {
+    print('Error formatting timestamp: $e');
+    return 'Invalid date';
+  }
+}
+
+// Format view count with K/M suffix
+String formatViewCount(int views) {
+  if (views >= 1000000) {
+    return '${(views / 1000000).toStringAsFixed(1)}M views';
+  } else if (views >= 1000) {
+    return '${(views / 1000).toStringAsFixed(1)}K views';
+  } else {
+    return '$views views';
+  }
+}
