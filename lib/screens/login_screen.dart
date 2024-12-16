@@ -1,7 +1,8 @@
-import 'package:ecoscan/backend-client/login_authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoscan/screens/homepage_screen.dart';
 import 'package:ecoscan/screens/register_screen.dart';
+import 'package:ecoscan/backend-client/login_authentication.dart';
+import 'package:ecoscan/backend-client/get_local_user.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,6 +13,23 @@ class LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
+
+  @override
+  void initState() {
+    super.initState();
+    checkLocalUser();
+  }
+
+  Future<void> checkLocalUser() async {
+    final user = await getLocalUser();
+
+    // If email exists, user is logged in
+    if (user.email.isNotEmpty && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomePageScreen()),
+      );
+    }
+  }
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
@@ -34,6 +52,7 @@ class LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
 
         if (loginResponse.success) {
+          // The loginUser function already handles storing data in SharedPreferences
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => HomePageScreen()),
@@ -41,8 +60,9 @@ class LoginScreenState extends State<LoginScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text(
-                    loginResponse.error ?? 'Login failed. Please try again.')),
+              content: Text(
+                  loginResponse.error ?? 'Login failed. Please try again.'),
+            ),
           );
         }
       } catch (e) {
@@ -77,9 +97,13 @@ class LoginScreenState extends State<LoginScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
                 ),
+                keyboardType: TextInputType.emailAddress,
                 validator: (value) {
-                  if (value!.isEmpty) {
+                  if (value == null || value.isEmpty) {
                     return 'Please enter your email';
+                  }
+                  if (!value.contains('@')) {
+                    return 'Please enter a valid email';
                   }
                   return null;
                 },
@@ -94,7 +118,7 @@ class LoginScreenState extends State<LoginScreen> {
                 ),
                 obscureText: true,
                 validator: (value) {
-                  if (value!.isEmpty) {
+                  if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
                   return null;
