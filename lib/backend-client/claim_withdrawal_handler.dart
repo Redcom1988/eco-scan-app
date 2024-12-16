@@ -20,8 +20,82 @@ class ClaimResponse {
   });
 }
 
+Future<int> getId(String username) async {
+  try {
+    print('Fetching ID for username: $username');
+
+    final uri = Uri.parse(
+        'https://w4163hhc-3000.asse.devtunnels.ms/users/getId?username=$username');
+    print('Request URL: $uri');
+
+    final response = await http.get(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(Duration(seconds: 10));
+
+    print('Response status code: ${response.statusCode}');
+    print('Raw response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      print('Parsed response data: $responseData');
+
+      if (responseData['success'] == true) {
+        final id = responseData['userid'];
+        if (id != null) {
+          print('Successfully got ID: $id');
+          return id;
+        }
+        print('ID field is null in response');
+        return -1;
+      } else {
+        print('Response indicated failure. Error: ${responseData['error']}');
+        return -1;
+      }
+    } else {
+      print('HTTP request failed with status: ${response.statusCode}');
+      print('Error response body: ${response.body}');
+      return -1;
+    }
+  } catch (e, stackTrace) {
+    print('Exception in getId: $e');
+    print('Stack trace: $stackTrace');
+    return -1;
+  }
+}
+
 Future<ClaimResponse> claimWithdrawal(int withdrawalId, int userId) async {
   try {
+    final checkResponse = await http.get(
+      Uri.parse(
+          'https://w4163hhc-3000.asse.devtunnels.ms/withdrawals/$withdrawalId'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(Duration(seconds: 10));
+
+    print("Check response status: ${checkResponse.statusCode}");
+    print("Check response body: ${checkResponse.body}");
+
+    if (checkResponse.statusCode == 200) {
+      final withdrawalData = json.decode(checkResponse.body)['data'];
+
+      if (withdrawalData['userId'] != null) {
+        return ClaimResponse(
+          success: false,
+          error: 'This withdrawal has already been claimed',
+        );
+      }
+    } else if (checkResponse.statusCode == 404) {
+      return ClaimResponse(
+        success: false,
+        error: 'Withdrawal not found',
+      );
+    }
+
+    // If not claimed, proceed with claiming
     final response = await http
         .put(
           Uri.parse(
@@ -31,8 +105,6 @@ Future<ClaimResponse> claimWithdrawal(int withdrawalId, int userId) async {
           },
           body: jsonEncode({
             'userId': userId,
-            'claimedAt': DateTime.now().toUtc().toIso8601String(),
-            'claimedBy': 'Redcom1988', // Current user's login
           }),
         )
         .timeout(Duration(seconds: 10));
@@ -43,18 +115,12 @@ Future<ClaimResponse> claimWithdrawal(int withdrawalId, int userId) async {
     if (response.statusCode == 200) {
       try {
         final Map<String, dynamic> data = json.decode(response.body);
-
-        if (data['success'] == true) {
-          return ClaimResponse(
-            success: true,
-            message: data['message'] ?? 'Withdrawal claimed successfully',
-            claimedAmount: data['data']?['claimedAmount']?.toDouble(),
-            newBalance: data['data']?['newBalance']?.toDouble(),
-            data: data['data'],
-          );
-        }
-
-        throw FormatException('Server indicated failure: ${data['message']}');
+        return ClaimResponse(
+          success: true,
+          message: 'Withdrawal claimed successfully',
+          claimedAmount: data['updatedValue']?.toDouble(),
+          data: data,
+        );
       } catch (e) {
         print("Error parsing claim response: $e");
         return ClaimResponse(
