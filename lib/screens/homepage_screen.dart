@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import './home_screen.dart';
 import './news_screen.dart';
-import './voucher_screen.dart';
+import 'voucher_owned.dart';
 import './profile_screen.dart';
 import './qrscanner_screen.dart';
 
@@ -14,7 +14,7 @@ class HomePageScreen extends StatelessWidget {
         HomeScreen(),
         NewsScreen(),
         QRScannerScreen(),
-        VouchersScreen(),
+        VoucherScreen(),
         ProfileScreen(),
       ];
 
