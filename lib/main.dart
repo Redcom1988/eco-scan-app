@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app_state.dart';
-import 'screens/login_screen.dart'; // Import the login screen
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(MyApp());

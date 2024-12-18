@@ -1,44 +1,184 @@
 import 'package:ecoscan/backend-client/qrcode_machine_handler.dart';
+import 'package:ecoscan/models/item.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class WithdrawalForm extends StatefulWidget {
+class WithdrawalScreen extends StatefulWidget {
   @override
-  WithdrawalFormState createState() => WithdrawalFormState();
+  WithdrawalScreenState createState() => WithdrawalScreenState();
 }
 
-class WithdrawalFormState extends State<WithdrawalForm> {
-  List<ItemRow> items = [];
+// Create a class to hold the item data
+class ItemData {
+  final ItemRow row;
+  final GlobalKey<ItemRowState> key;
+
+  ItemData(this.row, this.key);
+}
+
+class ItemRow extends StatefulWidget {
+  final Function(ItemRow) onDelete;
+  final List<Item> availableItems;
+  final GlobalKey<ItemRowState> itemKey;
+
+  ItemRow({
+    required this.onDelete,
+    required this.availableItems,
+    required this.itemKey,
+  }) : super(key: itemKey);
+
+  @override
+  ItemRowState createState() => ItemRowState();
+}
+
+class ItemRowState extends State<ItemRow> {
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController qtyController = TextEditingController();
+  Item? selectedItem;
+
+  // Add getters to access the current values
+  String? get itemId => selectedItem?.itemId.toString();
+  String get quantity => qtyController.text;
+  bool isValid() => selectedItem != null && quantity.isNotEmpty;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: DropdownButton<Item>(
+            hint: Text('Select Item'),
+            value: selectedItem,
+            onChanged: (Item? newValue) {
+              setState(() {
+                selectedItem = newValue;
+                idController.text = newValue?.itemId.toString() ?? '';
+              });
+            },
+            items: widget.availableItems.map((Item item) {
+              return DropdownMenuItem<Item>(
+                value: item,
+                child: Text(item.itemName),
+              );
+            }).toList(),
+          ),
+        ),
+        SizedBox(width: 16),
+        Expanded(
+          child: TextField(
+            controller: qtyController,
+            decoration: InputDecoration(
+              labelText: 'Quantity',
+              errorText: quantity.isEmpty ? 'Required' : null,
+            ),
+            keyboardType: TextInputType.number,
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.delete),
+          onPressed: () {
+            widget.onDelete(widget);
+          },
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    idController.dispose();
+    qtyController.dispose();
+    super.dispose();
+  }
+}
+
+class WithdrawalScreenState extends State<WithdrawalScreen> {
+  List<ItemData> items = [];
   int? withdrawalId;
-  bool showQR = false; // New flag to control view
+  bool showQR = false;
+  List<Item>? availableItems;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    addNewItem();
+    loadItems();
+  }
+
+  Future<void> loadItems() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final response = await getItems();
+
+    setState(() {
+      if (response.success) {
+        availableItems = response.items;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.error ?? 'Failed to load items')),
+        );
+      }
+      isLoading = false;
+    });
+
+    if (availableItems != null && availableItems!.isNotEmpty) {
+      addNewItem();
+    }
   }
 
   void addNewItem() {
+    if (availableItems == null || availableItems!.isEmpty) return;
+
     setState(() {
-      items.add(ItemRow(
+      final key = GlobalKey<ItemRowState>();
+      final row = ItemRow(
         onDelete: (ItemRow item) {
           setState(() {
-            items.remove(item);
+            items.removeWhere((itemData) => itemData.row == item);
           });
         },
-      ));
+        availableItems: availableItems ?? [],
+        itemKey: key,
+      );
+      items.add(ItemData(row, key));
     });
   }
 
+  bool validateForm() {
+    bool isValid = true;
+    for (var itemData in items) {
+      if (!itemData.key.currentState!.isValid()) {
+        isValid = false;
+        break;
+      }
+    }
+    return isValid;
+  }
+
   Future<void> submitForm() async {
+    if (items.isEmpty) return;
+
+    if (!validateForm()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please fill all required fields correctly'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final withdrawalData = {
       'contents': {
         'items': items
-            .map((item) => {
-                  'id': item.idController.text,
-                  'qty': item.qtyController.text,
+            .map((itemData) => {
+                  'id': itemData.key.currentState!.itemId,
+                  'qty': itemData.key.currentState!.quantity,
                 })
-            .toList()
+            .toList(),
+        'timestamp': DateTime.now().toUtc().toString(),
       }
     };
 
@@ -46,36 +186,42 @@ class WithdrawalFormState extends State<WithdrawalForm> {
       final response = await postWithdrawal(withdrawalData);
 
       if (response.success && response.withdrawalId != null) {
-        print('Withdrawal ID: ${response.withdrawalId}');
-
         setState(() {
           withdrawalId = response.withdrawalId;
-          showQR = true; // Show QR view after successful submission
+          showQR = true;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  'Withdrawal submitted successfully. ID: ${response.withdrawalId}')),
+            content: Text(
+                'Withdrawal submitted successfully. ID: ${response.withdrawalId}'),
+            backgroundColor: Colors.green,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(response.error ?? 'Failed to submit withdrawal')),
+            content: Text(response.error ?? 'Failed to submit withdrawal'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting withdrawal: ${e.toString()}')),
+        SnackBar(
+          content: Text('Error submitting withdrawal: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
+  // Rest of the build method remains the same, but update the ListView.builder:
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('QR Code Machine Simulator'),
+        title: Text('QR Code Machine'),
         leading: showQR
             ? IconButton(
                 icon: Icon(Icons.arrow_back),
@@ -90,149 +236,135 @@ class WithdrawalFormState extends State<WithdrawalForm> {
               )
             : null,
       ),
-      body: showQR
-          ? Center(
-              // QR Code View
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 250,
-                    height: 250,
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 3,
-                          blurRadius: 7,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: QrImageView(
-                      data: withdrawalId.toString(),
-                      version: QrVersions.auto,
-                      size: 200.0,
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  Text(
-                    'Printed QR Code',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 32),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        showQR = false;
-                        withdrawalId = null;
-                        items.clear();
-                        addNewItem();
-                      });
-                    },
-                    icon: Icon(Icons.add),
-                    label: Text('Create New Deposit'),
-                    style: ElevatedButton.styleFrom(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : Padding(
-              // Form View
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: items.length,
-                      itemBuilder: (context, index) {
-                        return items[index];
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : showQR
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: addNewItem,
-                        icon: Icon(Icons.add),
-                        label: Text('Add Item'),
+                      Container(
+                        width: 250,
+                        height: 250,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 3,
+                              blurRadius: 7,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: QrImageView(
+                          data: withdrawalId.toString(),
+                          version: QrVersions.auto,
+                          size: 200.0,
+                        ),
                       ),
+                      SizedBox(height: 24),
+                      Text(
+                        'Withdrawal QR Code',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'ID: $withdrawalId',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(height: 32),
                       ElevatedButton.icon(
-                        onPressed: items.isEmpty ? null : submitForm,
-                        icon: Icon(Icons.send),
-                        label: Text('Submit'),
+                        onPressed: () {
+                          setState(() {
+                            showQR = false;
+                            withdrawalId = null;
+                            items.clear();
+                            addNewItem();
+                          });
+                        },
+                        icon: Icon(Icons.add),
+                        label: Text('Create New Withdrawal'),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                )
+              : Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      if (availableItems?.isEmpty ?? true)
+                        Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text(
+                            'No items available',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            return items[index].row;
+                          },
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: availableItems?.isEmpty ?? true
+                                ? null
+                                : addNewItem,
+                            icon: Icon(Icons.add),
+                            label: Text('Add Item'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: items.isEmpty ? null : submitForm,
+                            icon: Icon(Icons.send),
+                            label: Text('Submit'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
     );
   }
-}
-
-// ItemRow class remains unchanged
-class ItemRow extends StatelessWidget {
-  final TextEditingController idController = TextEditingController();
-  final TextEditingController qtyController = TextEditingController();
-  final Function(ItemRow) onDelete;
-
-  ItemRow({required this.onDelete});
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: TextField(
-                controller: idController,
-                decoration: InputDecoration(
-                  labelText: 'Item ID',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              flex: 1,
-              child: TextField(
-                controller: qtyController,
-                decoration: InputDecoration(
-                  labelText: 'Quantity',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
-              onPressed: () => onDelete(this),
-            ),
-          ],
-        ),
-      ),
-    );
+  void dispose() {
+    // Clean up is handled in ItemRowState
+    super.dispose();
   }
 }
 
 void main() {
   runApp(MaterialApp(
-    home: WithdrawalForm(),
+    home: WithdrawalScreen(),
   ));
 }

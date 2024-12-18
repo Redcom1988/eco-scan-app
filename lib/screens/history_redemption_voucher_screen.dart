@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class RiwayatPenukaranScreen extends StatefulWidget {
   @override
-  _RiwayatPenukaranScreenState createState() => _RiwayatPenukaranScreenState();
+  RiwayatPenukaranScreenState createState() => RiwayatPenukaranScreenState();
 }
 
-class _RiwayatPenukaranScreenState extends State<RiwayatPenukaranScreen> {
+class RiwayatPenukaranScreenState extends State<RiwayatPenukaranScreen> {
   String selectedMonth = "Januari 2024";
 
   final List<String> months = [
@@ -210,7 +210,8 @@ class _RiwayatPenukaranScreenState extends State<RiwayatPenukaranScreen> {
     return ElevatedButton(
       onPressed: () {},
       style: ElevatedButton.styleFrom(
-        backgroundColor: status == "Ditukarkan" ? Colors.grey : const Color(0xFF1B5E20),
+        backgroundColor:
+            status == "Ditukarkan" ? Colors.grey : const Color(0xFF1B5E20),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
