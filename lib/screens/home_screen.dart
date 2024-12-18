@@ -1,3 +1,4 @@
+import 'package:ecoscan/screens/voucher_claim_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoscan/backend-client/fetch_balance.dart';
 import '../models/user.dart'; // Add this import
@@ -13,6 +14,8 @@ class HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   String? _error;
   User? _user;
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
 
   @override
   void initState() {
@@ -21,13 +24,13 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadUserAndBalance() async {
+    if (!mounted) return;
+
     try {
-      if (mounted) {
-        setState(() {
-          _isLoading = true;
-          _error = null;
-        });
-      }
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
 
       _user = await getLocalUser();
       print('Loaded user: ${_user?.username}');
@@ -38,21 +41,19 @@ class HomeScreenState extends State<HomeScreen> {
         print('Fetched balance: $_balance');
       } else {
         print('Username is empty or null');
-      }
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        throw Exception('Invalid username');
       }
     } catch (e) {
+      print('Error in _loadUserAndBalance: $e');
+      setState(() {
+        _error = 'Failed to load user data or balance';
+      });
+    } finally {
       if (mounted) {
         setState(() {
-          _error = 'Failed to load user data or balance';
           _isLoading = false;
         });
       }
-      print('Error in _loadUserAndBalance: $e');
     }
   }
 
@@ -60,18 +61,23 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildBalanceSection(),
-            SizedBox(height: 10),
-            _buildShortcutButtons(),
-            SizedBox(height: 20),
-            _buildVendingMachineMap(),
-            SizedBox(height: 20),
-            _buildPopularEducationSection(),
-          ],
+      body: RefreshIndicator(
+        key: _refreshIndicatorKey,
+        onRefresh: _loadUserAndBalance,
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(), // Enable pull-to-refresh
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildBalanceSection(),
+              SizedBox(height: 10),
+              _buildShortcutButtons(),
+              SizedBox(height: 20),
+              _buildVendingMachineMap(),
+              SizedBox(height: 20),
+              _buildPopularEducationSection(),
+            ],
+          ),
         ),
       ),
     );
@@ -141,7 +147,17 @@ class HomeScreenState extends State<HomeScreen> {
           _buildShortcutButton(
               icon: Icons.history, label: 'Riwayat botol', onTap: () {}),
           _buildShortcutButton(
-              icon: Icons.shopping_cart, label: 'Tukar poin', onTap: () {}),
+            icon: Icons.shopping_cart,
+            label: 'Tukar poin',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VoucherClaimScreen(),
+                ),
+              );
+            },
+          ),
           _buildShortcutButton(
               icon: Icons.card_giftcard,
               label: 'Riwayat voucher',
