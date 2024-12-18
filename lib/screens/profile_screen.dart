@@ -19,13 +19,6 @@ class ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadUser();
-    // if (user == null) {
-    //   Navigator.pushAndRemoveUntil(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => LoginScreen()),
-    //     (route) => false,
-    //   );
-    // }
   }
 
   Future<void> _loadUser() async {
