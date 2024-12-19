@@ -2,6 +2,48 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+// Function to fetch popular education content
+Future<List<Map<String, dynamic>>?> fetchPopularEducationContent() async {
+  try {
+    print('Fetching popular education content');
+
+    final response = await http.get(
+      Uri.parse('https://w4163hhc-3000.asse.devtunnels.ms/education/popular'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(Duration(seconds: 10));
+
+    print('Response status: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = jsonDecode(response.body);
+      print('Fetched ${responseData.length} items');
+
+      return responseData
+          .map((item) => {
+                'contentId': item['contentId'] ?? 0,
+                'contentTitle': item['contentTitle'] ?? '',
+                'contentDescription': item['contentDescription'] ?? '',
+                'contentFull': item['contentFull'] ?? '',
+                'contentImage': item['contentImage'] ?? '',
+                'contentViews': item['contentViews'] ?? 0,
+                'contentLikes': item['contentLikes'] ?? 0,
+                'timestamp':
+                    item['timestamp'] ?? DateTime.now().toIso8601String(),
+              })
+          .toList();
+    } else {
+      print('Failed with status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      return null;
+    }
+  } catch (e) {
+    print('Error in fetchPopularEducationContent: $e');
+    return null;
+  }
+}
+
 // Function to fetch all education content
 Future<List<Map<String, dynamic>>?> fetchEducationContent() async {
   try {
@@ -66,20 +108,31 @@ Future<bool> incrementContentViews(int contentId) async {
 }
 
 // Function to toggle likes
-Future<bool> toggleContentLike(int contentId) async {
+Future<bool> toggleContentLike(int contentId, bool isLiking) async {
   try {
-    print('Toggling like for content: $contentId');
+    print(
+        'Toggling like for content: $contentId (${isLiking ? 'liking' : 'unliking'})');
 
-    final response = await http.put(
-      Uri.parse(
-          'https://w4163hhc-3000.asse.devtunnels.ms/education/$contentId/likes'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-    ).timeout(Duration(seconds: 10));
+    final response = await http
+        .put(
+          Uri.parse(
+              'https://w4163hhc-3000.asse.devtunnels.ms/education/$contentId/likes'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode({
+            'isLiking': isLiking,
+          }),
+        )
+        .timeout(const Duration(seconds: 10));
 
     print('Response status: ${response.statusCode}');
-    return response.statusCode == 200;
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      return responseData['success'] ?? false;
+    }
+    return false;
   } catch (e) {
     print('Error in toggleContentLike: $e');
     return false;
