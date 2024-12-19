@@ -1,6 +1,58 @@
 import 'package:ecoscan/backend-client/education_handler.dart';
+import 'package:ecoscan/provider/news_provider.dart';
+import 'package:ecoscan/screens/content_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+
+import 'package:provider/provider.dart';
+
+class LikeButton extends StatelessWidget {
+  final bool isLiked;
+  final int likeCount;
+  final Function() onPressed;
+  final double iconSize;
+
+  const LikeButton({
+    super.key,
+    required this.isLiked,
+    required this.likeCount,
+    required this.onPressed,
+    this.iconSize = 20,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        minWidth: 50, // Adjust this value based on your needs
+        maxWidth: 65, // Adjust this value based on your needs
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: onPressed,
+            icon: Icon(
+              isLiked ? Icons.favorite : Icons.favorite_border,
+              color: isLiked ? Colors.red : Colors.grey,
+              size: iconSize,
+            ),
+          ),
+          const SizedBox(width: 1.0),
+          Text(
+            '$likeCount',
+            style: TextStyle(
+              fontSize: 12.0,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 // Build card widget for news item
 Widget buildNewsCard(BuildContext context, Map<String, dynamic> content,
@@ -97,18 +149,28 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content,
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () => onLike(content['contentId']),
-                        icon: Icon(
-                          content['isLiked'] ?? false
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: content['isLiked'] ?? false
-                              ? Colors.red
-                              : Colors.grey,
-                          size: 20,
+                      InkWell(
+                        onTap: () => onLike(content['contentId']),
+                        child: SizedBox(
+                          width: 20, // Match icon size
+                          height: 20, // Match icon size
+                          child: Icon(
+                            content['isLiked'] ?? false
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: content['isLiked'] ?? false
+                                ? Colors.red
+                                : Colors.grey,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 1.0),
+                      Text(
+                        '${content['contentLikes'] ?? 0}',
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.grey[600],
                         ),
                       ),
                       const SizedBox(width: 4.0),
@@ -160,20 +222,20 @@ class NewsScreenState extends State<NewsScreen> {
     try {
       final content = await fetchEducationContent();
       if (!mounted) return;
-      setState(() {
-        if (content != null) {
-          _content = content;
+
+      if (content != null) {
+        // Update content through provider
+        Provider.of<NewsProvider>(context, listen: false).setContent(content);
+        setState(() {
           _error = null;
           lastRefresh = DateTime.now();
-        } else {
-          _error = 'Failed to load content';
-        }
-      });
+        });
+      } else {
+        setState(() => _error = 'Failed to load content');
+      }
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = 'Error: ${e.toString()}';
-      });
+      setState(() => _error = 'Error: ${e.toString()}');
       print('Error loading content: $e');
     } finally {
       if (mounted) {
@@ -182,15 +244,22 @@ class NewsScreenState extends State<NewsScreen> {
     }
   }
 
-  // Handle like action
   Future<void> handleLike(int contentId) async {
     try {
-      final success = await toggleContentLike(contentId);
-      if (success) {
-        await loadContent();
-      }
+      final newsProvider = Provider.of<NewsProvider>(context, listen: false);
+
+      // Let the NewsProvider handle both the UI update and API call
+      await newsProvider.toggleLike(contentId);
     } catch (e) {
       print('Error handling like: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating like: ${e.toString()}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -207,8 +276,22 @@ class NewsScreenState extends State<NewsScreen> {
           }
         });
       }
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ContentDetailScreen(contentId: contentId),
+          ),
+        );
+      }
     } catch (e) {
       print('Error handling read more: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading content: $e')),
+        );
+      }
     }
   }
 
@@ -272,7 +355,45 @@ class NewsScreenState extends State<NewsScreen> {
         elevation: 0,
         centerTitle: false,
       ),
-      body: _buildNewsScreen(),
+      body: Consumer<NewsProvider>(
+        builder: (context, newsProvider, child) {
+          if (_isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (_error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(_error!),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: loadContent,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final now = DateTime.now();
+          return RefreshIndicator(
+            onRefresh: loadContent,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: newsProvider.content.length,
+              itemBuilder: (context, index) => buildNewsCard(
+                context,
+                newsProvider.content[index],
+                now,
+                handleLike,
+                handleReadMore,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
