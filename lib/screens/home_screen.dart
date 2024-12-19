@@ -1,7 +1,9 @@
+import 'package:ecoscan/backend-client/education_handler.dart';
+import 'package:ecoscan/screens/content_detail_screen.dart';
 import 'package:ecoscan/screens/voucher_claim_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoscan/backend-client/fetch_balance.dart';
-import '../models/user.dart'; // Add this import
+import 'package:ecoscan/models/user.dart';
 import 'package:ecoscan/backend-client/get_local_user.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +16,7 @@ class HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   String? _error;
   User? _user;
+  List<Map<String, dynamic>>? _popularEducation;
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
@@ -21,6 +24,27 @@ class HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserAndBalance();
+    _loadPopularEducation();
+  }
+
+  Future<void> _loadPopularEducation() async {
+    if (!mounted) return;
+
+    try {
+      final educationContent = await fetchPopularEducationContent();
+      if (mounted) {
+        setState(() {
+          _popularEducation = educationContent;
+        });
+      }
+    } catch (e) {
+      print('Error loading popular education: $e');
+      if (mounted) {
+        setState(() {
+          _popularEducation = null;
+        });
+      }
+    }
   }
 
   Future<void> _loadUserAndBalance() async {
@@ -39,6 +63,8 @@ class HomeScreenState extends State<HomeScreen> {
         print('Attempting to fetch balance for username: ${_user!.username}');
         _balance = await fetchBalance(_user!.username);
         print('Fetched balance: $_balance');
+
+        await _loadPopularEducation();
       } else {
         print('Username is empty or null');
         throw Exception('Invalid username');
@@ -237,27 +263,58 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ),
         SizedBox(height: 10),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildEducationCard(
-                  'Kerajinan Bunga dari Botol', '11.210 view', () {}),
-              _buildEducationCard(
-                  'Bunga Indah hanya dari...', '11.210 view', () {}),
-            ],
+        if (_popularEducation == null)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (_popularEducation!.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('Tidak ada konten edukasi'),
+            ),
+          )
+        else
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _popularEducation!.map((content) {
+                return _buildEducationCard(
+                  title: content['contentTitle'] as String,
+                  views: '${content['contentViews']} view',
+                  imageUrl: content['contentImage'] as String,
+                  contentId: content['contentId'] as int,
+                  contentLikes: content['contentLikes'] as int,
+                );
+              }).toList(),
+            ),
           ),
-        ),
       ],
     );
   }
 
-  Widget _buildEducationCard(String title, String views, VoidCallback onTap) {
+  Widget _buildEducationCard({
+    required String title,
+    required String views,
+    required String imageUrl,
+    required int contentId,
+    required int contentLikes,
+  }) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ContentDetailScreen(contentId: contentId),
+          ),
+        );
+      },
       child: Container(
         width: 150,
-        margin: EdgeInsets.only(left: 16),
+        margin: EdgeInsets.only(left: 16, right: 8, bottom: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -266,20 +323,40 @@ class HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                 color: Colors.green[100],
                 borderRadius: BorderRadius.circular(12),
+                image: imageUrl.isNotEmpty
+                    ? DecorationImage(
+                        image: NetworkImage(imageUrl),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: Center(child: Text('Gambar')), // Placeholder
+              child: imageUrl.isEmpty
+                  ? Center(child: Icon(Icons.image, color: Colors.green[800]))
+                  : null,
             ),
             SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(fontWeight: FontWeight.bold),
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             SizedBox(height: 4),
-            Text(
-              views,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+            Row(
+              children: [
+                Text(
+                  views,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+                const Padding(padding: EdgeInsets.only(right: 8)),
+                Icon(Icons.favorite, size: 16, color: Colors.grey[600]),
+                const Padding(padding: EdgeInsets.only(right: 4)),
+                Text(
+                  '$contentLikes likes',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+              ],
+            )
           ],
         ),
       ),
