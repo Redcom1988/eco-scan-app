@@ -45,7 +45,8 @@ class _PusatBantuanPageState extends State<PusatBantuanPage> {
             children: [
               TextField(
                 controller: _judulController,
-                decoration: const InputDecoration(labelText: 'Judul Pengumuman'),
+                decoration:
+                    const InputDecoration(labelText: 'Judul Pengumuman'),
               ),
               TextField(
                 controller: _deskripsiController,
@@ -61,7 +62,6 @@ class _PusatBantuanPageState extends State<PusatBantuanPage> {
             ),
             TextButton(
               onPressed: () {
-                // Simpan pengumuman ke database atau state (untuk saat ini hanya print log)
                 print("Judul: ${_judulController.text}");
                 print("Deskripsi: ${_deskripsiController.text}");
                 Navigator.pop(context);
@@ -96,62 +96,80 @@ class _PusatBantuanPageState extends State<PusatBantuanPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.green),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {});
-              },
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: 'Cari laporan',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+          // Placeholder text
+          Center(
+            child: Transform.rotate(
+              angle: -0.5, // Approximately -30 degrees
+              child: Text(
+                'PLACEHOLDER',
+                style: TextStyle(
+                  fontSize: 60,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.withOpacity(0.2),
                 ),
               ),
             ),
           ),
-          // Daftar laporan
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredList.length,
-              itemBuilder: (context, index) {
-                final laporan = filteredList[index];
-                return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    leading: const CircleAvatar(
-                      child: Icon(Icons.person, color: Colors.white),
-                      backgroundColor: Colors.green,
-                    ),
-                    title: Text(
-                      laporan['nama'],
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      laporan['laporan'],
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: ElevatedButton(
-                      onPressed: () {
-                        // Lihat detail laporan (tampilkan log atau navigasi ke halaman detail)
-                        print("Laporan dari: ${laporan['nama']}");
-                        print("Isi laporan: ${laporan['laporan']}");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                      child: const Text('Lihat selengkapnya'),
+          // Main content
+          Column(
+            children: [
+              // Search bar
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Cari laporan',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              // Daftar laporan
+              Expanded(
+                child: ListView.builder(
+                  itemCount: filteredList.length,
+                  itemBuilder: (context, index) {
+                    final laporan = filteredList[index];
+                    return Card(
+                      margin: const EdgeInsets.all(8.0),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.person, color: Colors.white),
+                          backgroundColor: Colors.green,
+                        ),
+                        title: Text(
+                          laporan['nama'],
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          laporan['laporan'],
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: () {
+                            print("Laporan dari: ${laporan['nama']}");
+                            print("Isi laporan: ${laporan['laporan']}");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                          ),
+                          child: const Text('Lihat selengkapnya'),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -164,4 +182,3 @@ class _PusatBantuanPageState extends State<PusatBantuanPage> {
     );
   }
 }
-
