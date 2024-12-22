@@ -2,12 +2,14 @@ class User {
   final String email;
   final String username;
   final String fullName;
+  final String? role;
   final DateTime? createdAt; // Optional: add more user properties
 
   User({
     required this.email,
     required this.username,
     required this.fullName,
+    this.role,
     this.createdAt,
   });
 
@@ -17,6 +19,7 @@ class User {
       email: json['email'] ?? '',
       username: json['username'] ?? '',
       fullName: json['fullName'] ?? '',
+      role: json['role'],
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
@@ -28,6 +31,7 @@ class User {
       'email': email,
       'username': username,
       'fullName': fullName,
+      'role': role,
       'createdAt': createdAt?.toIso8601String(),
     };
   }
