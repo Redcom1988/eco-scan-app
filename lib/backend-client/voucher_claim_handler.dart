@@ -1,4 +1,5 @@
 import 'package:ecoscan/models/owned_voucher.dart';
+import 'package:ecoscan/models/redeem_record.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -140,6 +141,56 @@ Future<List<OwnedVoucher>> getOwnedVouchers({required String userId}) async {
     }
   } catch (e, stackTrace) {
     print('Exception in getOwnedVouchers: $e');
+    print('Stack trace: $stackTrace');
+    return [];
+  }
+}
+
+Future<List<RedeemRecord>> getRedeemRecords({required int userId}) async {
+  try {
+    print('Fetching redeem records for user: $userId');
+
+    final uri = Uri.parse(
+        'https://w4163hhc-3000.asse.devtunnels.ms/vouchers/getRedeemRecords/$userId');
+
+    print('Request URL: $uri');
+
+    final response = await http.get(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    print('Response status code: ${response.statusCode}');
+    print('Raw response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = jsonDecode(response.body);
+      print('Parsed response data: $responseData');
+
+      final records = responseData.map((data) {
+        try {
+          final record = RedeemRecord.fromJson(data);
+          print(
+              'Successfully parsed redeem record with value: ${record.voucherValue}');
+          return record;
+        } catch (e) {
+          print('Error parsing individual redeem record: $e');
+          print('Problematic data: $data');
+          rethrow;
+        }
+      }).toList();
+
+      print('Successfully parsed ${records.length} redeem records');
+      return records;
+    } else {
+      print('HTTP request failed with status: ${response.statusCode}');
+      print('Error response body: ${response.body}');
+      return [];
+    }
+  } catch (e, stackTrace) {
+    print('Exception in getRedeemRecords: $e');
     print('Stack trace: $stackTrace');
     return [];
   }
