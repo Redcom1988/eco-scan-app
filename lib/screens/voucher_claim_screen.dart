@@ -122,6 +122,8 @@ class VoucherClaimScreenState extends State<VoucherClaimScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 1,
         title: const Text('Available Vouchers'),
         actions: [
           IconButton(

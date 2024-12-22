@@ -103,7 +103,7 @@ class VoucherScreenState extends State<VoucherScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Available Vouchers'),
+        title: const Text('Owned Vouchers'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
