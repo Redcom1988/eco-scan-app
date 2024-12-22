@@ -6,8 +6,8 @@ import 'package:ecoscan/screens/AdminScreen/VoucherPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class HomePageScreen extends StatelessWidget {
-  HomePageScreen();
+class AdminHomePageScreen extends StatelessWidget {
+  AdminHomePageScreen();
 
   List<Widget> _screens(BuildContext context) => [
         KelolaEdukasiPage(),
@@ -18,14 +18,14 @@ class HomePageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
+    var adminAppState = context.watch<MyAdminAppState>();
 
     return Scaffold(
-      body: _screens(context)[appState.selectedIndex],
+      body: _screens(context)[adminAppState.selectedIndexAdmin],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: appState.selectedIndex,
+        currentIndex: adminAppState.selectedIndexAdmin,
         onTap: (index) {
-          appState.setIndex(index);
+          adminAppState.setIndexAdmin(index);
         },
         items: [
           BottomNavigationBarItem(
