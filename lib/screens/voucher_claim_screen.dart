@@ -47,7 +47,7 @@ class VoucherClaimScreenState extends State<VoucherClaimScreen> {
     });
 
     try {
-      final vouchers = await getVouchers();
+      final vouchers = await getActiveVouchers();
       setState(() {
         _vouchers = vouchers;
         _isLoading = false;
