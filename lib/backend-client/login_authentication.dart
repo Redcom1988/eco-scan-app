@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
@@ -6,15 +7,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LoginResponse {
   final bool success;
   final String? error;
+  final String? role;
 
   LoginResponse({
     required this.success,
     this.error,
+    this.role,
   });
 }
 
 Future<LoginResponse> loginUser(String email, String password) async {
-  // Hash the password using SHA-256
   var bytes = utf8.encode(password);
   var digest = sha256.convert(bytes);
 
@@ -32,38 +34,46 @@ Future<LoginResponse> loginUser(String email, String password) async {
         )
         .timeout(Duration(seconds: 20));
 
+    // Parse response body
+    final Map<String, dynamic> data =
+        response.body.isNotEmpty ? json.decode(response.body) : {};
+
     if (response.statusCode == 200) {
-      print("Login Success");
-      final Map<String, dynamic> data = json.decode(response.body);
+      print("Login Success: Status ${response.statusCode}");
 
-      // Create User object from response data
-      // final user = User(
-      //   email: email,
-      //   username: data['username'] ?? '',
-      //   fullName: data['fullName'] ?? '',
-      // );
-
-      final username = data['username'] ?? '';
-      final fullName = data['fullName'] ?? '';
-
+      // Store user data in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('email', email);
-      await prefs.setString('username', username);
-      await prefs.setString('fullName', fullName);
+      await Future.wait([
+        prefs.setString('email', email),
+        prefs.setString('username', data['username'] ?? ''),
+        prefs.setString('fullName', data['fullName'] ?? ''),
+        prefs.setString('role', data['role'] ?? ''),
+      ]);
 
       return LoginResponse(
+        role: data['role'],
         success: true,
       );
     } else {
-      print("QWE");
+      print("Login failed with status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
       return LoginResponse(
         success: false,
-        error: 'Login failed. Please try again.',
+        error:
+            data['message'] ?? 'Login failed. Please check your credentials.',
       );
     }
   } catch (e) {
-    String error = "${e.toString()}ASD";
-    print(error);
+    print("Login error: ${e.toString()}");
+
+    if (e is TimeoutException) {
+      return LoginResponse(
+        success: false,
+        error: 'Connection timeout. Please try again.',
+      );
+    }
+
     return LoginResponse(
       success: false,
       error: 'Network error. Please check your connection.',

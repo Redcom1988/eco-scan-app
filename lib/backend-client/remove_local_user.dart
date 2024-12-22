@@ -5,4 +5,5 @@ Future<void> removeLocalUser() async {
   await prefs.remove('username');
   await prefs.remove('email');
   await prefs.remove('fullName');
+  await prefs.remove('role');
 }

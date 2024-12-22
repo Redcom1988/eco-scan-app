@@ -6,10 +6,12 @@ Future<User> getLocalUser() async {
   final email = prefs.getString('email') ?? '';
   final username = prefs.getString('username') ?? '';
   final fullName = prefs.getString('fullName') ?? '';
+  final role = prefs.getString('role') ?? '';
 
   return User(
     email: email,
     username: username,
     fullName: fullName,
+    role: role,
   );
 }
