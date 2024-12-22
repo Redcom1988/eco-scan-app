@@ -300,18 +300,29 @@ class HomeScreenState extends State<HomeScreen> {
             ),
           )
         else
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _popularEducation!.map((content) {
-                return _buildEducationCard(
-                  title: content['contentTitle'] as String,
-                  views: '${content['contentViews']} view',
-                  imageUrl: content['contentImage'] as String,
-                  contentId: content['contentId'] as int,
-                  contentLikes: content['contentLikes'] as int,
-                );
-              }).toList(),
+          SizedBox(
+            height: 240, // Set a fixed height for the scrolling area
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start, // Align items to the top
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: _popularEducation!.map((content) {
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: _buildEducationCard(
+                        title: content['contentTitle'] as String,
+                        views: '${content['contentViews']} view',
+                        imageUrl: content['contentImage'] as String,
+                        contentId: content['contentId'] as int,
+                        contentLikes: content['contentLikes'] as int,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
       ],

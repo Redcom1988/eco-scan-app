@@ -171,8 +171,8 @@ void onQRScanned(int withdrawalId, int userId) async {
 }
 
 Future<List<WithdrawalRecord>> getWithdrawals(int userId) async {
-  final Uri url =
-      Uri.parse('https://w4163hhc-3000.asse.devtunnels.ms/withdrawals/$userId');
+  final Uri url = Uri.parse(
+      'https://w4163hhc-3000.asse.devtunnels.ms/withdrawals/user/$userId');
 
   try {
     final response = await http.get(
@@ -183,8 +183,16 @@ Future<List<WithdrawalRecord>> getWithdrawals(int userId) async {
     );
 
     if (response.statusCode == 200) {
-      List<dynamic> jsonList = json.decode(response.body);
-      return jsonList.map((json) => WithdrawalRecord.fromJson(json)).toList();
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      if (responseData['success'] == true && responseData['data'] != null) {
+        final List<dynamic> withdrawalsData = responseData['data'];
+        return withdrawalsData
+            .map((withdrawal) => WithdrawalRecord.fromJson(withdrawal))
+            .toList();
+      } else {
+        throw Exception('Failed to load withdrawals: ${responseData['error']}');
+      }
     } else {
       throw Exception(
           'Failed to load withdrawals. Status code: ${response.statusCode}');
@@ -192,11 +200,4 @@ Future<List<WithdrawalRecord>> getWithdrawals(int userId) async {
   } catch (e) {
     throw Exception('Error fetching withdrawals: $e');
   }
-}
-
-List<WithdrawalRecord> parseWithdrawals(String responseBody) {
-  final parsed = json.decode(responseBody);
-  return (parsed as List)
-      .map((json) => WithdrawalRecord.fromJson(json))
-      .toList();
 }

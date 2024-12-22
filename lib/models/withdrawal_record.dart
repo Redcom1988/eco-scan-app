@@ -4,11 +4,13 @@ class WithdrawalRecord {
   final double totalValue;
   final DateTime timestamp;
   final List<Map<String, dynamic>> contents;
+  final String? claimedBy;
 
   WithdrawalRecord({
     required this.totalValue,
     required this.timestamp,
     required this.contents,
+    this.claimedBy,
   });
 
   factory WithdrawalRecord.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class WithdrawalRecord {
           ? DateTime.parse(json['timestamp'])
           : DateTime.now(),
       contents: items,
+      claimedBy: json['claimedBy'],
     );
   }
 
@@ -43,6 +46,7 @@ class WithdrawalRecord {
         'items': contents,
         'timestamp': DateTime.now().toIso8601String(),
       }),
+      'claimedBy': claimedBy,
     };
   }
 }
