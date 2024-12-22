@@ -212,3 +212,112 @@ String formatViewCount(int views) {
     return '$views views';
   }
 }
+
+// Add Education Content
+Future<Map<String, dynamic>?> addEducationContent({
+  required String contentTitle,
+  required String contentDescription,
+  required String contentFull,
+  String? contentImage,
+}) async {
+  try {
+    final response = await http
+        .post(
+          Uri.parse(
+              'https://w4163hhc-3000.asse.devtunnels.ms/education/addEducation'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode({
+            'contentTitle': contentTitle,
+            'contentDescription': contentDescription,
+            'contentFull': contentFull,
+            if (contentImage != null) 'contentImage': contentImage,
+          }),
+        )
+        .timeout(Duration(seconds: 10));
+
+    if (response.statusCode == 201) {
+      return jsonDecode(response.body);
+    } else {
+      print(
+          'Adding education content failed with status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      return null;
+    }
+  } catch (e) {
+    print('Add education content error: $e');
+    return null;
+  }
+}
+
+// Update Education Content
+Future<bool> updateEducationContent({
+  required String contentId,
+  String? contentTitle,
+  String? contentDescription,
+  String? contentFull,
+  String? contentImage,
+}) async {
+  try {
+    final Map<String, dynamic> updateFields = {
+      if (contentTitle != null) 'contentTitle': contentTitle,
+      if (contentDescription != null) 'contentDescription': contentDescription,
+      if (contentFull != null) 'contentFull': contentFull,
+      if (contentImage != null) 'contentImage': contentImage,
+    };
+
+    if (updateFields.isEmpty) {
+      print('No fields to update');
+      return false;
+    }
+
+    final response = await http
+        .put(
+          Uri.parse(
+              'https://w4163hhc-3000.asse.devtunnels.ms/education/updateEducation/$contentId'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(updateFields),
+        )
+        .timeout(Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print(
+          'Updating education content failed with status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    print('Update education content error: $e');
+    return false;
+  }
+}
+
+// Delete Education Content
+Future<bool> deleteEducationContent(String contentId) async {
+  try {
+    final response = await http.delete(
+      Uri.parse(
+          'https://w4163hhc-3000.asse.devtunnels.ms/education/deleteEducation/$contentId'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print(
+          'Deleting education content failed with status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    print('Delete education content error: $e');
+    return false;
+  }
+}
