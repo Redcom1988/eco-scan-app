@@ -1,6 +1,8 @@
 import 'package:ecoscan/backend-client/education_handler.dart';
 import 'package:ecoscan/screens/content_detail_screen.dart';
 import 'package:ecoscan/screens/voucher_claim_screen.dart';
+import 'package:ecoscan/screens/voucher_redeem_history.dart';
+import 'package:ecoscan/screens/withdrawal_history.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoscan/backend-client/fetch_balance.dart';
 import 'package:ecoscan/models/user.dart';
@@ -111,12 +113,13 @@ class HomeScreenState extends State<HomeScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
+      backgroundColor: Colors.green[800],
+      elevation: 1,
       title: Text(
         'Ecoscan',
         style: TextStyle(
-          color: Colors.green[800],
+          fontSize: 24,
+          color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -171,7 +174,16 @@ class HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildShortcutButton(
-              icon: Icons.history, label: 'Riwayat botol', onTap: () {}),
+              icon: Icons.history,
+              label: 'Riwayat botol',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WithdrawalHistoryScreen(),
+                  ),
+                );
+              }),
           _buildShortcutButton(
             icon: Icons.shopping_cart,
             label: 'Tukar poin',
@@ -185,9 +197,17 @@ class HomeScreenState extends State<HomeScreen> {
             },
           ),
           _buildShortcutButton(
-              icon: Icons.card_giftcard,
-              label: 'Riwayat voucher',
-              onTap: () {}),
+            icon: Icons.card_giftcard,
+            label: 'Riwayat voucher',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RedeemHistoryScreen(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -240,13 +260,15 @@ class HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(12),
             color: Colors.grey[300],
           ),
-          child: Center(
-            child: Text(
-              'Peta lokasi vending machine di sini',
-              style: TextStyle(color: Colors.black54),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image(
+              image: AssetImage('assets/images/map_placeholder.png'),
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
           ),
-        ),
+        )
       ],
     );
   }
