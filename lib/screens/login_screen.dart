@@ -247,7 +247,7 @@ class LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
