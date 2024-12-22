@@ -8,3 +8,12 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+class MyAdminAppState extends ChangeNotifier {
+  int selectedIndexAdmin = 0;
+
+  void setIndexAdmin(int index) {
+    selectedIndexAdmin = index;
+    notifyListeners();
+  }
+}
