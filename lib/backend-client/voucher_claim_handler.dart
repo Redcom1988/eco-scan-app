@@ -39,6 +39,42 @@ Future<List<Map<String, dynamic>>> getVouchers() async {
   }
 }
 
+// Get all active vouchers function
+Future<List<Map<String, dynamic>>> getActiveVouchers() async {
+  try {
+    print('Fetching all vouchers');
+
+    final uri = Uri.parse(
+        'https://w4163hhc-3000.asse.devtunnels.ms/vouchers/getActiveVouchers');
+    print('Request URL: $uri');
+
+    final response = await http.get(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(Duration(seconds: 10));
+
+    print('Response status code: ${response.statusCode}');
+    print('Raw response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = jsonDecode(response.body);
+      print('Parsed response data: $responseData');
+
+      return responseData.cast<Map<String, dynamic>>();
+    } else {
+      print('HTTP request failed with status: ${response.statusCode}');
+      print('Error response body: ${response.body}');
+      return [];
+    }
+  } catch (e, stackTrace) {
+    print('Exception in getVouchers: $e');
+    print('Stack trace: $stackTrace');
+    return [];
+  }
+}
+
 // Claim voucher function
 Future<Map<String, dynamic>> claimVoucher({
   required String userId,
