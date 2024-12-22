@@ -6,8 +6,12 @@ import 'package:ecoscan/provider/news_provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => NewsProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NewsProvider()),
+        ChangeNotifierProvider(create: (_) => MyAppState()),
+        ChangeNotifierProvider(create: (_) => MyAdminAppState()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -18,16 +22,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => MyAppState(),
-      child: MaterialApp(
-        title: 'Ecoscan',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
-        ),
-        home: LoginScreen(), // Set login screen as the home
+    return MaterialApp(
+      title: 'Ecoscan',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
       ),
+      home: LoginScreen(),
     );
   }
 }
