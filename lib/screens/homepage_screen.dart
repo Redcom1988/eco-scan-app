@@ -43,7 +43,7 @@ class HomePageScreen extends StatelessWidget {
             label: 'Scan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.airplane_ticket),
+            icon: Icon(Icons.loyalty),
             label: 'Vouchers',
           ),
           BottomNavigationBarItem(
