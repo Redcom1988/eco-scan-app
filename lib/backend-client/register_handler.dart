@@ -4,15 +4,13 @@ import 'package:crypto/crypto.dart';
 
 Future<bool> registerUser(
     String username, String email, String password, String fullName) async {
-  // Hash the password using SHA-256
   var bytes = utf8.encode(password);
   var digest = sha256.convert(bytes);
 
   try {
     final response = await http
         .post(
-          Uri.parse(
-              'https://w4163hhc-3000.asse.devtunnels.ms/users/addUser'), // Corrected endpoint
+          Uri.parse('https://w4163hhc-3000.asse.devtunnels.ms/users/addUser'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
@@ -20,7 +18,7 @@ Future<bool> registerUser(
             'username': username,
             'email': email,
             'passwordHash': digest.toString(),
-            'fullName': fullName, // Corrected parameter name
+            'fullName': fullName,
           }),
         )
         .timeout(Duration(seconds: 10));
