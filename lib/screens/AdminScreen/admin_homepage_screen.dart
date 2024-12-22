@@ -1,8 +1,8 @@
 import 'package:ecoscan/app_state.dart';
-import 'package:ecoscan/screens/AdminScreen/KelolaEdukasiPage.dart';
-import 'package:ecoscan/screens/AdminScreen/ProfileAdminPage.dart';
-import 'package:ecoscan/screens/AdminScreen/PusatBantuanPage.dart';
-import 'package:ecoscan/screens/AdminScreen/VoucherPage.dart';
+import 'package:ecoscan/screens/AdminScreen/education_manager.dart';
+import 'package:ecoscan/screens/AdminScreen/admin_profile.dart';
+import 'package:ecoscan/screens/AdminScreen/help_center.dart';
+import 'package:ecoscan/screens/AdminScreen/voucher_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
