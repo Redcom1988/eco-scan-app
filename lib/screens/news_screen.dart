@@ -112,8 +112,7 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8.0),
-              // Stats and actions row
+              const SizedBox(height: 4.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -152,8 +151,8 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content,
                       InkWell(
                         onTap: () => onLike(content['contentId']),
                         child: SizedBox(
-                          width: 20, // Match icon size
-                          height: 20, // Match icon size
+                          width: 16,
+                          height: 16,
                           child: Icon(
                             content['isLiked'] ?? false
                                 ? Icons.favorite
@@ -161,7 +160,7 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content,
                             color: content['isLiked'] ?? false
                                 ? Colors.red
                                 : Colors.grey,
-                            size: 20,
+                            size: 16,
                           ),
                         ),
                       ),
@@ -179,6 +178,7 @@ Widget buildNewsCard(BuildContext context, Map<String, dynamic> content,
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           minimumSize: const Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: const Text(
                           'Baca selengkapnya',
