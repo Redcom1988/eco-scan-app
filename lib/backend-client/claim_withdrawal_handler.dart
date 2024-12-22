@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:ecoscan/models/withdrawal_record.dart';
 import 'package:http/http.dart' as http;
 
 class ClaimResponse {
@@ -166,5 +167,46 @@ void onQRScanned(int withdrawalId, int userId) async {
     print('New balance: ${result.newBalance}');
   } else {
     print('Claim failed: ${result.error}');
+  }
+}
+
+Future<List<WithdrawalRecord>> getWithdrawals(int userId) async {
+  try {
+    final response = await http.get(
+      Uri.parse(
+          'https://w4163hhc-3000.asse.devtunnels.ms/withdrawals/records/$userId'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    print('Response status code: ${response.statusCode}');
+    print('Raw response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+      // Check if the response has success status and data
+      if (jsonResponse['success'] == true && jsonResponse['data'] != null) {
+        final List<dynamic> withdrawalData = jsonResponse['data'];
+        print('Parsed response data: $withdrawalData');
+
+        return withdrawalData
+            .map((record) => WithdrawalRecord.fromJson(record))
+            .toList();
+      } else {
+        print('API response indicates failure or missing data');
+        print('Response body: ${response.body}');
+        return [];
+      }
+    } else {
+      print('HTTP request failed with status: ${response.statusCode}');
+      print('Error response body: ${response.body}');
+      return [];
+    }
+  } catch (e, stackTrace) {
+    print('Exception in getWithdrawals: $e');
+    print('Stack trace: $stackTrace');
+    return [];
   }
 }
