@@ -2,8 +2,8 @@ import 'package:ecoscan/backend-client/get_local_user.dart';
 import 'package:ecoscan/models/item_cache.dart';
 import 'package:ecoscan/models/user.dart';
 import 'package:ecoscan/models/withdrawal_record.dart';
-import 'package:flutter/material.dart';
 import 'package:ecoscan/backend-client/claim_withdrawal_handler.dart';
+import 'package:flutter/material.dart';
 
 class WithdrawalHistoryScreen extends StatefulWidget {
   @override

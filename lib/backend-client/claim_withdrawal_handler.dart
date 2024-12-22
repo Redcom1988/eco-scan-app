@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:ecoscan/models/withdrawal_record.dart';
 import 'package:http/http.dart' as http;
 
 class ClaimResponse {
@@ -167,4 +168,35 @@ void onQRScanned(int withdrawalId, int userId) async {
   } else {
     print('Claim failed: ${result.error}');
   }
+}
+
+Future<List<WithdrawalRecord>> getWithdrawals(int userId) async {
+  final Uri url =
+      Uri.parse('https://w4163hhc-3000.asse.devtunnels.ms/withdrawals/$userId');
+
+  try {
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonList = json.decode(response.body);
+      return jsonList.map((json) => WithdrawalRecord.fromJson(json)).toList();
+    } else {
+      throw Exception(
+          'Failed to load withdrawals. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error fetching withdrawals: $e');
+  }
+}
+
+List<WithdrawalRecord> parseWithdrawals(String responseBody) {
+  final parsed = json.decode(responseBody);
+  return (parsed as List)
+      .map((json) => WithdrawalRecord.fromJson(json))
+      .toList();
 }
