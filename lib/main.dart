@@ -1,7 +1,7 @@
+import 'package:ecoscan/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app_state.dart';
-import 'package:ecoscan/screens/login_screen.dart';
 import 'package:ecoscan/provider/news_provider.dart';
 
 void main() {
@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
       ),
+      // home: LoginScreen(),
       home: LoginScreen(),
     );
   }

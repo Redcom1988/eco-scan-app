@@ -6,8 +6,6 @@ import 'package:ecoscan/backend-client/login_authentication.dart';
 import 'package:ecoscan/backend-client/get_local_user.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
   @override
   LoginScreenState createState() => LoginScreenState();
 }
@@ -16,7 +14,6 @@ class LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -25,43 +22,23 @@ class LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> checkLocalUser() async {
-    try {
-      final user = await getLocalUser();
+    final user = await getLocalUser();
 
-      if (!mounted) return;
-
-      if (user.email.isNotEmpty) {
-        if (user.role == 'admin') {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => AdminHomePageScreen()),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HomePageScreen()),
-          );
-        }
-      }
-    } catch (e) {
-      print('Error checking local user: $e');
+    if (user.email.isNotEmpty && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomePageScreen()),
+      );
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
       _formKey.currentState!.save();
       final loginResponse = await loginUser(_email, _password);
 
       if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
 
       if (loginResponse.success) {
         print('Navigation attempting for role: ${loginResponse.role}');
@@ -101,10 +78,9 @@ class LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-      });
+      if (!mounted) {
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -127,127 +103,168 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Login',
-          style: TextStyle(color: Colors.black),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                const SizedBox(height: 32),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: const Icon(Icons.email),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) => _email = value!.trim(),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: const Icon(Icons.lock),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) => _password = value!,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    backgroundColor: Colors.green,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-                const SizedBox(height: 16),
-                Row(
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/background.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account? "),
-                    TextButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => RegisterScreen(),
-                                ),
-                              );
-                            },
-                      child: const Text(
-                        'Register',
+                  children: <Widget>[
+                    Image.asset(
+                      'assets/images/logo.png',
+                      height: 100,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Hallo, selamat datang!',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: 'Nama Pengguna / Email',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: Icon(Icons.person, color: Colors.green),
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Harap masukkan email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Harap masukkan email yang valid';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) => _email = value!,
+                    ),
+                    SizedBox(height: 16),
+                    TextFormField(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: 'Kata Sandi',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: Icon(Icons.lock, color: Colors.green),
+                      ),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Harap masukkan kata sandi';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) => _password = value!,
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                      child: Text(
+                        'Masuk',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
+                          fontSize: 16,
+                          color: Colors.white,
                         ),
                       ),
                     ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Pilih opsi masuk lainnya...',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.white),
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: Image.asset(
+                            'assets/images/google.png', // Nama file untuk ikon Google
+                            height: 24,
+                            width: 24,
+                          ),
+                          label: Text('Google'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.white),
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: Image.asset(
+                            'assets/images/facebook.png', // Nama file untuk ikon Facebook
+                            height: 24,
+                            width: 24,
+                          ),
+                          label: Text('Facebook'),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Belum punya akun? ',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RegisterScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Daftar sekarang',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

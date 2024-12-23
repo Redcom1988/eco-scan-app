@@ -1,7 +1,7 @@
 import 'package:ecoscan/backend-client/remove_local_user.dart';
+import 'package:ecoscan/screens/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
-import '../models/user.dart';
+import 'package:ecoscan/models/user.dart';
 import 'package:ecoscan/backend-client/get_local_user.dart';
 
 class ProfileScreen extends StatefulWidget {
