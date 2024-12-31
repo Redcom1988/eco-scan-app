@@ -148,34 +148,6 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
                       Icons.person, 'Username', user?.username ?? ''),
                   _buildUserInfoItem(Icons.email, 'Email', user?.email ?? ''),
                   _buildMenuItem(
-                    icon: Icons.favorite,
-                    title: 'Edukasi yang Banyak Disukai',
-                    onTap: () {
-                      print('Navigate to Liked Education');
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.bookmark,
-                    title: 'Edukasi yang Banyak Disimpan',
-                    onTap: () {
-                      print('Navigate to Saved Education');
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.notifications,
-                    title: 'Notifikasi dan Bilah Status',
-                    onTap: () {
-                      print('Navigate to Notifications');
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.language,
-                    title: 'Bahasa dan Wilayah',
-                    onTap: () {
-                      print('Navigate to Language Settings');
-                    },
-                  ),
-                  _buildMenuItem(
                     icon: Icons.settings,
                     title: 'Pengaturan Lainnya',
                     onTap: () {
