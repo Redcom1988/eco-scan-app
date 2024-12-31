@@ -196,7 +196,7 @@ class VoucherPageState extends State<VoucherPage> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Nilai: Rp ${voucher['voucherValue']}'),
+                        Text('Nilai: ${voucher['voucherValue']} poin'),
                         Text('Kadaluarsa: ${voucher['expiryDate']}'),
                         Text(
                             'Status: ${voucher['isActive'] ? 'Aktif' : 'Nonaktif'}'),
