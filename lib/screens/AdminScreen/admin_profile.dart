@@ -2,6 +2,7 @@ import 'package:ecoscan/backend-client/get_local_user.dart';
 import 'package:ecoscan/backend-client/remove_local_user.dart';
 import 'package:ecoscan/models/user.dart';
 import 'package:ecoscan/screens/login_screen.dart';
+import 'package:ecoscan/screens/support_ticket_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class ProfileAdminPage extends StatefulWidget {
@@ -23,12 +24,47 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
   Future<void> _loadUser() async {
     try {
       final localUser = await getLocalUser();
-      setState(() {
-        user = localUser;
-      });
-      print('Loaded user: ${user?.fullName}');
+      if (localUser != null) {
+        setState(() {
+          user = localUser;
+        });
+        print('Loaded user details:');
+        print('User ID: ${user?.userId}');
+        print('Full Name: ${user?.fullName}');
+        print('Email: ${user?.email}');
+        print('Username: ${user?.username}');
+      } else {
+        print('Failed to load user data');
+      }
     } catch (e) {
       print('Error loading user: $e');
+    }
+  }
+
+  void _navigateToSupportTickets(BuildContext context) {
+    print('Attempting to navigate to support tickets...');
+    print('Current user: ${user?.toString()}');
+
+    if (user != null) {
+      print('Navigating to SupportTicketListScreen with:');
+      print('userId: ${user!.userId}');
+      print('username: ${user!.username}');
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SupportTicketListScreen(
+            userId: user!.userId,
+            username: user!.username,
+            userRole: user!.role,
+          ),
+        ),
+      );
+    } else {
+      print('User is null, cannot navigate');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please login first')),
+      );
     }
   }
 
@@ -50,40 +86,12 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
     );
   }
 
-  Widget _buildMenuItem(
-      {required IconData icon, required String title, VoidCallback? onTap}) {
-    return Column(
-      children: [
-        ListTile(
-          leading: Icon(icon, color: Colors.green.shade900),
-          title: Text(title, style: const TextStyle(fontSize: 16)),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: onTap,
-        ),
-        const Divider(),
-      ],
-    );
-  }
-
-  Widget _buildUserInfoItem(IconData icon, String title, String value) {
-    return Column(
-      children: [
-        ListTile(
-          leading: Icon(icon, color: Colors.green.shade900),
-          title: Text(title),
-          subtitle: Text(value),
-        ),
-        const Divider(),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Ecoscan',
+          'Ecoscan Admin',
           style: TextStyle(color: Colors.green.shade900),
         ),
         backgroundColor: Colors.transparent,
@@ -148,11 +156,9 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
                       Icons.person, 'Username', user?.username ?? ''),
                   _buildUserInfoItem(Icons.email, 'Email', user?.email ?? ''),
                   _buildMenuItem(
-                    icon: Icons.settings,
-                    title: 'Pengaturan Lainnya',
-                    onTap: () {
-                      print('Navigate to Settings');
-                    },
+                    icon: Icons.support,
+                    title: 'Pusat Bantuan dan Tiket',
+                    onTap: () => _navigateToSupportTickets(context),
                   ),
                   ListTile(
                     leading: const Icon(Icons.logout, color: Colors.red),
@@ -160,43 +166,7 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
                       'Keluar',
                       style: TextStyle(color: Colors.red),
                     ),
-                    onTap: () async {
-                      final shouldLogout = await showDialog<bool>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Konfirmasi Keluar'),
-                            content:
-                                const Text('Apakah Anda yakin ingin keluar?'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Batal'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text(
-                                  'Keluar',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-
-                      if (shouldLogout == true) {
-                        await removeLocalUser();
-                        if (!mounted) return;
-
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LoginScreen()),
-                          (route) => false,
-                        );
-                      }
-                    },
+                    onTap: () => _handleLogout(context),
                   ),
                 ],
               ),
@@ -204,6 +174,73 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Konfirmasi Keluar'),
+          content: const Text('Apakah Anda yakin ingin keluar?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(
+                'Keluar',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout == true) {
+      await removeLocalUser();
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+          (route) => false,
+        );
+      }
+    }
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    VoidCallback? onTap,
+  }) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: Colors.green.shade900),
+          title: Text(title, style: const TextStyle(fontSize: 16)),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: onTap,
+        ),
+        const Divider(),
+      ],
+    );
+  }
+
+  Widget _buildUserInfoItem(IconData icon, String title, String value) {
+    return Column(
+      children: [
+        ListTile(
+          leading: Icon(icon, color: Colors.green.shade900),
+          title: Text(title),
+          subtitle: Text(value),
+        ),
+        const Divider(),
+      ],
     );
   }
 }

@@ -24,10 +24,16 @@ class LoginScreenState extends State<LoginScreen> {
   Future<void> checkLocalUser() async {
     final user = await getLocalUser();
 
-    if (user.email.isNotEmpty && mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomePageScreen()),
-      );
+    if (user != null && user.email.isNotEmpty && mounted) {
+      if (user.role == 'admin') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => AdminHomePageScreen()),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => HomePageScreen()),
+        );
+      }
     }
   }
 

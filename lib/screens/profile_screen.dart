@@ -1,11 +1,11 @@
 import 'package:ecoscan/backend-client/remove_local_user.dart';
 import 'package:ecoscan/screens/login_screen.dart';
+import 'package:ecoscan/screens/support_ticket_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:ecoscan/models/user.dart';
 import 'package:ecoscan/backend-client/get_local_user.dart';
 
 class ProfileScreen extends StatefulWidget {
-  // Add user parameter
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
@@ -24,12 +24,47 @@ class ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUser() async {
     try {
       final localUser = await getLocalUser();
-      setState(() {
-        user = localUser;
-      });
-      print('Loaded user: ${user?.fullName}');
+      if (localUser != null) {
+        setState(() {
+          user = localUser;
+        });
+        print('Loaded user details:');
+        print('User ID: ${user?.userId}');
+        print('Full Name: ${user?.fullName}');
+        print('Email: ${user?.email}');
+        print('Username: ${user?.username}');
+      } else {
+        print('Failed to load user data');
+      }
     } catch (e) {
       print('Error loading user: $e');
+    }
+  }
+
+  void _navigateToSupportTickets(BuildContext context) {
+    print('Attempting to navigate to support tickets...');
+    print('Current user: ${user?.toString()}');
+
+    if (user != null) {
+      print('Navigating to SupportTicketListScreen with:');
+      print('userId: ${user!.userId}');
+      print('username: ${user!.username}');
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SupportTicketListScreen(
+            userId: user!.userId,
+            username: user!.username,
+            userRole: user!.role,
+          ),
+        ),
+      );
+    } else {
+      print('User is null, cannot navigate');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please login first')),
+      );
     }
   }
 
@@ -82,14 +117,14 @@ class ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    user?.fullName ?? '', // Display user's full name
+                    user?.fullName ?? '',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    user?.email ?? '', // Display user's email
+                    user?.email ?? '',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
@@ -105,13 +140,12 @@ class ProfileScreenState extends State<ProfileScreen> {
                   _buildUserInfoItem(
                       Icons.person, 'Username', user?.username ?? ''),
                   _buildUserInfoItem(Icons.email, 'Email', user?.email ?? ''),
-                  _buildMenuItem(Icons.favorite, 'Edukasi yang disukai'),
-                  _buildMenuItem(Icons.bookmark, 'Edukasi yang disimpan'),
                   _buildMenuItem(
-                      Icons.notifications, 'Notifikasi dan Bilah Status'),
-                  _buildMenuItem(Icons.language, 'Bahasa dan Wilayah'),
+                    Icons.support,
+                    'Pusat Bantuan dan Tiket',
+                    onTap: () => _navigateToSupportTickets(context),
+                  ),
                   _buildMenuItem(Icons.help, 'Pusat Bantuan'),
-                  _buildMenuItem(Icons.settings, 'Pengaturan Lainnya'),
                   _buildLogoutButton(context),
                 ],
               ),
@@ -122,23 +156,23 @@ class ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title) {
+  Widget _buildMenuItem(IconData icon, String title, {VoidCallback? onTap}) {
     return Column(
       children: [
         ListTile(
           leading: Icon(icon, color: Colors.green.shade900),
           title: Text(title),
           trailing: Icon(Icons.chevron_right),
-          onTap: () {
-            // Navigation function here
-          },
+          onTap: onTap ??
+              () {
+                // Default navigation function here
+              },
         ),
         Divider(),
       ],
     );
   }
 
-  // New method to display user info items
   Widget _buildUserInfoItem(IconData icon, String title, String value) {
     return Column(
       children: [
@@ -152,7 +186,6 @@ class ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // New method for logout button
   Widget _buildLogoutButton(BuildContext context) {
     return Column(
       children: [
@@ -160,7 +193,6 @@ class ProfileScreenState extends State<ProfileScreen> {
           leading: Icon(Icons.logout, color: Colors.red),
           title: Text('Keluar', style: TextStyle(color: Colors.red)),
           onTap: () async {
-            // Show confirmation dialog
             final shouldLogout = await showDialog<bool>(
               context: context,
               builder: (BuildContext context) {
@@ -182,18 +214,16 @@ class ProfileScreenState extends State<ProfileScreen> {
               },
             );
 
-            // If user confirmed logout
             if (shouldLogout == true) {
-              // Clear user session here
               await removeLocalUser();
-
-              if (!mounted) return;
-
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
-                (route) => false,
-              );
+              if (context.mounted) {
+                // Use context.mounted instead of mounted
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  (route) => false,
+                );
+              }
             }
           },
         ),
