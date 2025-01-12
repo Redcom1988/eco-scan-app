@@ -41,14 +41,25 @@ Future<LoginResponse> loginUser(String email, String password) async {
     if (response.statusCode == 200) {
       print("Login Success: Status ${response.statusCode}");
 
-      // Store user data in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      await Future.wait([
-        prefs.setString('email', email),
-        prefs.setString('username', data['username'] ?? ''),
-        prefs.setString('fullName', data['fullName'] ?? ''),
-        prefs.setString('role', data['role'] ?? ''),
-      ]);
+
+      // Store userId as string
+      final userId = data['userId'].toString();
+      await prefs.setString('userId', userId);
+
+      // Store other user data
+      await prefs.setString('email', email);
+      await prefs.setString('username', data['username'] ?? '');
+      await prefs.setString('fullName', data['fullName'] ?? '');
+      await prefs.setString('role', data['role'] ?? '');
+
+      // Verify storage
+      print('Stored user data in SharedPreferences:');
+      print('userId: ${prefs.getString('userId')}');
+      print('email: ${prefs.getString('email')}');
+      print('username: ${prefs.getString('username')}');
+      print('fullName: ${prefs.getString('fullName')}');
+      print('role: ${prefs.getString('role')}');
 
       return LoginResponse(
         role: data['role'],

@@ -1,14 +1,40 @@
 import 'package:ecoscan/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<User> getLocalUser() async {
+Future<User?> getLocalUser() async {
   final prefs = await SharedPreferences.getInstance();
+
+  // Get userId and verify it exists
+  final userIdString = prefs.getString('userId');
+  print('Retrieved userId from SharedPreferences: $userIdString');
+
+  if (userIdString == null || userIdString.isEmpty) {
+    print('No userId found in SharedPreferences');
+    return null;
+  }
+
+  // Parse userId to int
+  final userId = int.tryParse(userIdString);
+  if (userId == null) {
+    print('Invalid userId format in SharedPreferences');
+    return null;
+  }
+
+  // Get other user data
   final email = prefs.getString('email') ?? '';
   final username = prefs.getString('username') ?? '';
   final fullName = prefs.getString('fullName') ?? '';
   final role = prefs.getString('role') ?? '';
 
+  print('Retrieved user data from SharedPreferences:');
+  print('userId: $userId');
+  print('email: $email');
+  print('username: $username');
+  print('fullName: $fullName');
+  print('role: $role');
+
   return User(
+    userId: userId,
     email: email,
     username: username,
     fullName: fullName,
