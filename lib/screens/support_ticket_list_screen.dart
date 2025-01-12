@@ -74,28 +74,7 @@ class _SupportTicketListScreenState extends State<SupportTicketListScreen> {
       ),
       body: Column(
         children: [
-          // Add a welcome card
-          Card(
-            margin: EdgeInsets.all(16),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Selamat datang, ${widget.username}',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Disini Anda dapat membuat tiket bantuan dan melihat status tiket Anda.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Existing ticket list
+          SizedBox(height: 8),
           Expanded(
             child: _isLoading
                 ? Center(child: CircularProgressIndicator())
@@ -133,12 +112,15 @@ class _SupportTicketListScreenState extends State<SupportTicketListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _createNewTicket(),
-        backgroundColor: Colors.green.shade900,
-        child: Icon(Icons.add),
-        tooltip: 'Buat Tiket Baru',
-      ),
+      // Only show FloatingActionButton for non-admin users
+      floatingActionButton: widget.userRole.toLowerCase() != 'admin'
+          ? FloatingActionButton(
+              onPressed: () => _createNewTicket(),
+              backgroundColor: Colors.green.shade900,
+              child: Icon(Icons.add),
+              tooltip: 'Buat Tiket Baru',
+            )
+          : null, // Don't show FAB for admin users
     );
   }
 
