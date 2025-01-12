@@ -2,7 +2,6 @@ import 'package:ecoscan/backend-client/get_local_user.dart';
 import 'package:ecoscan/backend-client/remove_local_user.dart';
 import 'package:ecoscan/models/user.dart';
 import 'package:ecoscan/screens/login_screen.dart';
-import 'package:ecoscan/screens/support_ticket_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class ProfileAdminPage extends StatefulWidget {
@@ -41,50 +40,50 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
     }
   }
 
-  void _navigateToSupportTickets(BuildContext context) {
-    print('Attempting to navigate to support tickets...');
-    print('Current user: ${user?.toString()}');
+  // void _navigateToSupportTickets(BuildContext context) {
+  //   print('Attempting to navigate to support tickets...');
+  //   print('Current user: ${user?.toString()}');
 
-    if (user != null) {
-      print('Navigating to SupportTicketListScreen with:');
-      print('userId: ${user!.userId}');
-      print('username: ${user!.username}');
+  //   if (user != null) {
+  //     print('Navigating to SupportTicketListScreen with:');
+  //     print('userId: ${user!.userId}');
+  //     print('username: ${user!.username}');
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SupportTicketListScreen(
-            userId: user!.userId,
-            username: user!.username,
-            userRole: user!.role,
-          ),
-        ),
-      );
-    } else {
-      print('User is null, cannot navigate');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login first')),
-      );
-    }
-  }
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => SupportTicketListScreen(
+  //           userId: user!.userId,
+  //           username: user!.username,
+  //           userRole: user!.role,
+  //         ),
+  //       ),
+  //     );
+  //   } else {
+  //     print('User is null, cannot navigate');
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Please login first')),
+  //     );
+  //   }
+  // }
 
-  void _editProfileImage() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Edit Profile Picture'),
-          content: const Text('Feature coming soon...'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void _editProfileImage() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Edit Profile Picture'),
+  //         content: const Text('Feature coming soon...'),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context),
+  //             child: const Text('Close'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -121,13 +120,6 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
                           ),
                         ),
                       ),
-                      IconButton(
-                        onPressed: _editProfileImage,
-                        icon: Icon(
-                          Icons.camera_alt,
-                          color: Colors.green.shade900,
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -155,21 +147,16 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
                   _buildUserInfoItem(
                       Icons.person, 'Username', user?.username ?? ''),
                   _buildUserInfoItem(Icons.email, 'Email', user?.email ?? ''),
-                  _buildMenuItem(
-                    icon: Icons.support,
-                    title: 'Pusat Bantuan dan Tiket',
-                    onTap: () => _navigateToSupportTickets(context),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text(
-                      'Keluar',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    onTap: () => _handleLogout(context),
-                  ),
                 ],
               ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text(
+                'Keluar',
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () => _handleLogout(context),
             ),
           ],
         ),
