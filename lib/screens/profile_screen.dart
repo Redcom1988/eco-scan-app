@@ -141,11 +141,10 @@ class ProfileScreenState extends State<ProfileScreen> {
                       Icons.person, 'Username', user?.username ?? ''),
                   _buildUserInfoItem(Icons.email, 'Email', user?.email ?? ''),
                   _buildMenuItem(
-                    Icons.support,
-                    'Pusat Bantuan dan Tiket',
+                    Icons.help,
+                    'Pusat Bantuan',
                     onTap: () => _navigateToSupportTickets(context),
                   ),
-                  _buildMenuItem(Icons.help, 'Pusat Bantuan'),
                   _buildLogoutButton(context),
                 ],
               ),
