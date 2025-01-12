@@ -2,7 +2,8 @@ class OwnedVoucher {
   final int redeemId;
   final int voucherId;
   final String? voucherCode;
-  final double? voucherValue;
+  final double? voucherPrice;
+  final String? voucherDesc;
   final DateTime? expiryDate;
   final DateTime redeemDate;
   final bool used;
@@ -11,7 +12,8 @@ class OwnedVoucher {
     required this.redeemId,
     required this.voucherId,
     this.voucherCode,
-    this.voucherValue,
+    this.voucherPrice,
+    this.voucherDesc,
     this.expiryDate,
     required this.redeemDate,
     required this.used,
@@ -24,7 +26,8 @@ class OwnedVoucher {
         voucherId: json['voucherId'] as int,
         voucherCode: json['voucherCode'] as String?,
         // Convert integer to double since the JSON has integer values
-        voucherValue: (json['voucherValue'] as num?)?.toDouble(),
+        voucherPrice: (json['voucherPrice'] as num?)?.toDouble(),
+        voucherDesc: json['voucherDesc'] as String?,
         expiryDate: json['expiryDate'] != null
             ? DateTime.parse(json['expiryDate'] as String)
             : null,

@@ -93,7 +93,7 @@ class RedeemHistoryScreenState extends State<RedeemHistoryScreen> {
 
   Widget _buildVoucherCard(RedeemRecord record) {
     String formattedDate = _formatDate(record.redeemDate);
-    String formattedValue = record.voucherValue.toStringAsFixed(2);
+    String formattedPrice = record.voucherPrice.toStringAsFixed(2);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -120,7 +120,7 @@ class RedeemHistoryScreenState extends State<RedeemHistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  formattedValue,
+                  formattedPrice,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

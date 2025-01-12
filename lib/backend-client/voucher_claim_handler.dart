@@ -209,7 +209,7 @@ Future<List<RedeemRecord>> getRedeemRecords({required int userId}) async {
         try {
           final record = RedeemRecord.fromJson(data);
           print(
-              'Successfully parsed redeem record with value: ${record.voucherValue}');
+              'Successfully parsed redeem record with price: ${record.voucherPrice}');
           return record;
         } catch (e) {
           print('Error parsing individual redeem record: $e');

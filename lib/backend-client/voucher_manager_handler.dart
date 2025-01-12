@@ -17,7 +17,7 @@ Future<List<Map<String, dynamic>>?> fetchVouchers() async {
           .map((voucher) => {
                 'voucherId': voucher['voucherId'],
                 'voucherCode': voucher['voucherCode'],
-                'voucherValue': voucher['voucherValue'],
+                'voucherPrice': voucher['voucherPrice'],
                 'expiryDate': voucher['expiryDate'],
                 'isActive': voucher['isActive'] == 1,
               })
@@ -36,7 +36,8 @@ Future<List<Map<String, dynamic>>?> fetchVouchers() async {
 Future<bool> editVoucher({
   required String voucherId,
   required String voucherCode,
-  required int voucherValue,
+  required int voucherPrice,
+  required String voucherDesc,
   required String expiryDate,
   required bool isActive,
 }) async {
@@ -51,7 +52,8 @@ Future<bool> editVoucher({
           body: jsonEncode({
             'voucherId': voucherId,
             'voucherCode': voucherCode,
-            'voucherValue': voucherValue,
+            'voucherPrice': voucherPrice,
+            'voucherDesc': voucherDesc,
             'expiryDate': expiryDate,
             'isActive': isActive ? 1 : 0,
           }),
@@ -73,7 +75,8 @@ Future<bool> editVoucher({
 
 Future<bool> addVoucher({
   required String voucherCode,
-  required int voucherValue,
+  required int voucherPrice,
+  required String voucherDesc,
   required String expiryDate,
   bool isActive = true,
 }) async {
@@ -87,7 +90,8 @@ Future<bool> addVoucher({
           },
           body: jsonEncode({
             'voucherCode': voucherCode,
-            'voucherValue': voucherValue,
+            'voucherPrice': voucherPrice,
+            'voucherDesc': voucherDesc,
             'expiryDate': expiryDate,
             'isActive': isActive,
           }),

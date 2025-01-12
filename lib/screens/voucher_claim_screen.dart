@@ -201,7 +201,7 @@ class VoucherClaimScreenState extends State<VoucherClaimScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Value: ${voucher['voucherValue']?.toStringAsFixed(2) ?? '0.00'}',
+                              'Price: ${voucher['voucherPrice']?.toStringAsFixed(2) ?? '0.00'}',
                               style: const TextStyle(
                                 color: Colors.green,
                                 fontSize: 15,

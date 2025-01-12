@@ -179,9 +179,16 @@ class VoucherScreenState extends State<VoucherScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Value: ${voucher.voucherValue?.toStringAsFixed(2) ?? '0.00'}',
+                              'Price: ${voucher.voucherPrice?.toStringAsFixed(2) ?? '0.00'}',
                               style: const TextStyle(
                                 color: Colors.green,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Description: ${voucher.voucherDesc ?? ''}',
+                              style: const TextStyle(
                                 fontSize: 15,
                               ),
                             ),

@@ -1,20 +1,20 @@
 class RedeemRecord {
   final DateTime redeemDate;
-  final double voucherValue;
+  final double voucherPrice;
   final String voucherCode;
 
   RedeemRecord({
     required this.redeemDate,
-    required this.voucherValue,
+    required this.voucherPrice,
     required this.voucherCode,
   });
 
   factory RedeemRecord.fromJson(Map<String, dynamic> json) {
     return RedeemRecord(
-      redeemDate: json['redeemDate'] != null 
-          ? DateTime.parse(json['redeemDate']) 
+      redeemDate: json['redeemDate'] != null
+          ? DateTime.parse(json['redeemDate'])
           : DateTime.now(),
-      voucherValue: (json['voucherValue'] ?? 0).toDouble(),
+      voucherPrice: (json['voucherPrice'] ?? 0).toDouble(),
       voucherCode: json['voucherCode'] ?? '',
     );
   }

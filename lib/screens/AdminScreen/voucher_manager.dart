@@ -36,7 +36,8 @@ class VoucherPageState extends State<VoucherPage> {
 
   void _addVoucher() {
     final TextEditingController _codeController = TextEditingController();
-    final TextEditingController _valueController = TextEditingController();
+    final TextEditingController _priceController = TextEditingController();
+    final TextEditingController _descController = TextEditingController();
     final TextEditingController _expiryController = TextEditingController();
 
     showDialog(
@@ -52,9 +53,15 @@ class VoucherPageState extends State<VoucherPage> {
                 decoration: const InputDecoration(labelText: 'Kode Voucher'),
               ),
               TextField(
-                controller: _valueController,
+                controller: _priceController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Nilai Voucher'),
+                decoration: const InputDecoration(labelText: 'Harga Voucher'),
+              ),
+              TextField(
+                controller: _descController,
+                keyboardType: TextInputType.text,
+                decoration:
+                    const InputDecoration(labelText: 'Deskripsi Voucher'),
               ),
               TextField(
                 controller: _expiryController,
@@ -72,7 +79,8 @@ class VoucherPageState extends State<VoucherPage> {
               onPressed: () async {
                 final success = await addVoucher(
                   voucherCode: _codeController.text,
-                  voucherValue: int.tryParse(_valueController.text) ?? 0,
+                  voucherPrice: int.tryParse(_priceController.text) ?? 0,
+                  voucherDesc: _descController.text,
                   expiryDate: _expiryController.text,
                   isActive: true,
                 );
@@ -100,8 +108,9 @@ class VoucherPageState extends State<VoucherPage> {
 
   void _editVoucher(Map<String, dynamic> voucher) {
     final _codeController = TextEditingController(text: voucher['voucherCode']);
-    final _valueController =
-        TextEditingController(text: voucher['voucherValue'].toString());
+    final _priceController =
+        TextEditingController(text: voucher['voucherPrice'].toString());
+    final _descController = TextEditingController(text: voucher['voucherDesc']);
     final _expiryController =
         TextEditingController(text: voucher['expiryDate']);
 
@@ -118,9 +127,15 @@ class VoucherPageState extends State<VoucherPage> {
                 decoration: const InputDecoration(labelText: 'Kode Voucher'),
               ),
               TextField(
-                controller: _valueController,
+                controller: _priceController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Nilai Voucher'),
+                decoration: const InputDecoration(labelText: 'Harga Voucher'),
+              ),
+              TextField(
+                controller: _descController,
+                keyboardType: TextInputType.text,
+                decoration:
+                    const InputDecoration(labelText: 'Deskripsi Voucher'),
               ),
               TextField(
                 controller: _expiryController,
@@ -139,7 +154,8 @@ class VoucherPageState extends State<VoucherPage> {
                 final success = await editVoucher(
                   voucherId: voucher['voucherId'].toString(),
                   voucherCode: _codeController.text,
-                  voucherValue: int.tryParse(_valueController.text) ?? 0,
+                  voucherPrice: int.tryParse(_priceController.text) ?? 0,
+                  voucherDesc: _descController.text,
                   expiryDate: _expiryController.text,
                   isActive: voucher['isActive'],
                 );
@@ -196,8 +212,9 @@ class VoucherPageState extends State<VoucherPage> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Nilai: ${voucher['voucherValue']} poin'),
+                        Text('Harga: ${voucher['voucherPrice']} poin'),
                         Text('Kadaluarsa: ${voucher['expiryDate']}'),
+                        Text('Deskripsi: ${voucher['voucherDesc']}'),
                         Text(
                             'Status: ${voucher['isActive'] ? 'Aktif' : 'Nonaktif'}'),
                       ],
